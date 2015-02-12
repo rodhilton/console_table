@@ -101,7 +101,10 @@ class ConsoleTable
       justify = to_print[:justify] || :left
       mode = to_print[:mode] || :default
 
-      formatted=format(@working_width, text, ellipsize, justify).colorize(:color => color, :background => background, :mode => mode)
+      formatted=format(@working_width, text, ellipsize, justify)
+      if text != :default or background != :default or mode != :default
+        formatted = formatted.colorize(:color => color, :background => background, :mode => mode)
+      end
       @out.print formatted
     end
 
@@ -127,7 +130,11 @@ class ConsoleTable
         justify = to_print[:justify] || justify #can override
         mode = to_print[:mode] || :default
 
-        formatted=format(column[:size], text, ellipsize, justify).colorize(:color => color, :background => background, :mode => mode)
+        formatted=format(column[:size], text, ellipsize, justify)
+
+        if color != :default or background != :default or mode != :default
+          formatted = formatted.colorize(:color => color, :background => background, :mode => mode)
+        end
 
         unless (to_print[:highlight].nil?)
           highlight_regex = to_print[:highlight][:regex] || /wontbefoundbecauseit'sgobbledygookblahblahblahbah/
@@ -165,6 +172,11 @@ class ConsoleTable
       total_width = TermInfo.screen_columns
     rescue => ex
       total_width = ENV["COLUMNS"].to_i || 150
+    end
+
+    keys = @original_column_layout.collect { |d| d[:key] }.uniq
+    if keys.length < @original_column_layout.length
+      raise("ConsoleTable configuration invalid, same key defined more than once")
     end
 
     num_spacers = @original_column_layout.length - 1

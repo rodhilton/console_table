@@ -196,7 +196,7 @@ Row 2, Column 1      Row 2, Column 2                      Row  Row 2, Column 4  
 
     commit_table_config = [
         {:key=>:col1, :size=>20, :title=>"Column 1"},
-        {:key=>:col1, :size=>20, :title=>"Column 2"},
+        {:key=>:col2, :size=>20, :title=>"Column 2"},
     ]
 
     assert_raises(RuntimeError) { ConsoleTable.define(commit_table_config) }
@@ -207,7 +207,7 @@ Row 2, Column 1      Row 2, Column 2                      Row  Row 2, Column 4  
 
     commit_table_config = [
         {:key=>:col1, :size=>0.8, :title=>"Column 1"},
-        {:key=>:col1, :size=>0.3, :title=>"Column 2"},
+        {:key=>:col2, :size=>0.3, :title=>"Column 2"},
     ]
 
     assert_raises(RuntimeError) { ConsoleTable.define(commit_table_config) }
@@ -218,10 +218,97 @@ Row 2, Column 1      Row 2, Column 2                      Row  Row 2, Column 4  
 
     commit_table_config = [
         {:key=>:col1, :size=>0.8, :title=>"Column 1"},
-        {:key=>:col1, :size=>"hello!", :title=>"Column 2"},
+        {:key=>:col2, :size=>"hello!", :title=>"Column 2"},
     ]
 
     assert_raises(RuntimeError) { ConsoleTable.define(commit_table_config) }
+  end
+
+  def test_wont_allow_repeats_of_key_names
+    ENV["COLUMNS"] = "50"
+
+    commit_table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1"},
+        {:key=>:col1, :size=>20, :title=>"Column 2"},
+    ]
+
+    assert_raises(RuntimeError) { ConsoleTable.define(commit_table_config) }
+  end
+
+  def test_can_truncate_output
+    ENV["COLUMNS"] = "100"
+
+    commit_table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1"}
+    ]
+
+    ConsoleTable.define(commit_table_config, :output=>@mock_out) do |table|
+      table.print({
+                      :col1 => "This is short"
+                  })
+
+      table.print({
+                      :col1 => "This is way too long and it needs to get cut off"
+                  })
+
+      table.print({
+                      :col1 => {:text=>"This is way too long and it needs to get cut off", :ellipsize=>true}
+                  })
+    end
+
+    expected=<<-END
+====================
+Column 1
+--------------------
+This is short
+This is way too long
+This is way too l...
+====================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_can_justify_columns_and_override_in_rows
+    ENV["COLUMNS"] = "100"
+
+    commit_table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1"},
+        {:key=>:col2, :size=>20, :title=>"Column 2", :justify=>:center},
+        {:key=>:col3, :size=>20, :title=>"Column 3", :justify=>:right}
+    ]
+
+    ConsoleTable.define(commit_table_config, :output=>@mock_out) do |table|
+      table.print({
+                      :col1 => "Short1",
+                      :col2 => "Short2",
+                      :col3 => "Short3"
+                  })
+
+      table.print({
+                      :col1 => {text: "Short1"},
+                      :col2 => {text: "Short2"},
+                      :col3 => {text: "Short3"}
+                  })
+
+      table.print({
+                      :col1 => {text: "Short1", :justify=>:center},
+                      :col2 => {text: "Short2", :justify=>:right},
+                      :col3 => {text: "Short3", :justify=>:left}
+                  })
+    end
+
+    expected=<<-END
+==============================================================
+Column 1                   Column 2                   Column 3
+--------------------------------------------------------------
+Short1                      Short2                      Short3
+Short1                      Short2                      Short3
+       Short1                      Short2 Short3
+==============================================================
+    END
+
+    assert_output_equal expected, @mock_out.string
   end
 
   private
