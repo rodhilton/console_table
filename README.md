@@ -118,7 +118,7 @@ table_config = [
    {:key=>:name, :size=>15, :title=>"Name"},
    {:key=>:birthday, :size=>8, :title=>"DOB"},
    {:key=>:nickname, :size=>0.3, :title=>"Nickname(s)", :justify=>:center},
-   {:key=>:motto, :size=>"*", :title=>"Motto", :justify=>:right},
+   {:key=>:motto, :size=>"*", :title=>"Motto", :justify=>:right}
 ]
 
 ConsoleTable.define(table_config) do |table|
