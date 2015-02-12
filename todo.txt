@@ -1,2 +1,3 @@
 :border=>true on options, uses | instead of " " to space and adds 2 to the spacer count. prepends if true
 perhaps :border=>:thin, :thick, thin does above, thick also adds a row of --'s between, or even smartly uses +'s for joins
+note the dangerousness of this with the current impl - Total width available is always the screen width, so if you make a table with 2 20 char columns and set a border, where does the final | go? it should go at the end of the 40ish character, but it'd go at the end of the line I think. might not even want to bite this off
