@@ -147,9 +147,6 @@ You can also add a title and a footer to the table, or indent the entire table w
 
 ```ruby
 require 'console_table'
-require 'terminfo'
-
-puts TermInfo.screen_columns
 
 table_config = [
    {:key=>:title, :size=>15, :title=>"Movie Title"},
@@ -173,8 +170,17 @@ ConsoleTable.define(table_config, :left_margin=>5, :right_margin=>10, :title=>"M
 		:tagline=>{:text=>"Everyone is entitled to one good scare", :ellipsize=>true}
 	})
 
+	table << {
+		:title=>{:text=>"Nightmare on Elm St.", :highlight=>{:regex=>/[A-Z]/, :color=>:red}, :background=>:orange},
+		:name=>{:text=>"Freddy Krueger", :justify=>:left},
+		:release_date=>{text: "11-16-84", :color=>:blue},
+		:tagline=>{:text=>"A scream that wakes you up, might be your own", :ellipsize=>true}
+	}
+
+	table << ["Hellraiser", "Pinhead", "9-18-87", "Demon to some. Angel to others."]
+
 	table.add_footer("This is just a line of footer text")
-	table.add_footer("This is a second footer with \nlots of \nlinebreaks\n in it.")
+	table.add_footer("This is a second footer with \nlots of \nlinebreaks in it.")
 end
 ```
 
@@ -186,15 +192,17 @@ end
      -----------------------------------------------------------------
      Friday the 13th Jason's Mom     05-09-80 They were warned...Th...
      Halloween       Michael Meyers  10-25-80 Everyone is entitled ...
+     Nightmare on El Freddy Krueger  11-16-84 A scream that wakes y...
+     Hellraiser      Pinhead         9-18-87  Demon to some. Angel to
      -----------------------------------------------------------------
                                     This is just a line of footer text
                                           This is a second footer with
                                                                lots of
-                                                            linebreaks
-                                                                in it.
-     =================================================================  
+                                                     linebreaks in it.
+     =================================================================
 ```
 
+Note the alternative method of calling print (`<<`) and the fact that you can also supply an array instead of a hash, and ConsoleTable will infer from the array order which value goes in what column
 
 ## Contributing
 

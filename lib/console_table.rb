@@ -16,6 +16,7 @@ class ConsoleTable
     @right_margin = options[:right_margin] || 0
     @out = options[:output] || $stdout
     @title = options[:title]
+    @set_width = options[:width]
 
     @footer_lines = []
 
@@ -112,8 +113,21 @@ class ConsoleTable
     @out.print "\n"
   end
 
+  def <<(options)
+    print(options)
+  end
+
   def print(options)
     print_headings unless @headings_printed
+    
+    if options.is_a? Array #If an array or something is supplied, infer the order from the heading order
+      munged_options = {}
+      options.each_with_index do |element, i|
+        munged_options[@original_column_layout[i][:key]] = element
+      end
+
+      options = munged_options
+    end
 
     @out.print " "*@left_margin
     #column order is set, so go through each column and look up values in the incoming options
@@ -133,11 +147,19 @@ class ConsoleTable
 
         formatted=format(column[:size], text, ellipsize, justify)
 
-        if color != :default or background != :default or mode != :default
-          formatted = formatted.colorize(:color => color, :background => background, :mode => mode)
+        if color != :default
+          formatted = formatted.colorize(color)
         end
 
-        unless (to_print[:highlight].nil?)
+        if background != :default
+          formatted = formatted.colorize(:background=>background)
+        end
+
+        if mode != :default
+          formatted = formatted.colorize(:mode=>mode)
+        end
+
+        unless highlight.nil?
           highlight_regex = to_print[:highlight][:regex] || /wontbefoundbecauseit'sgobbledygookblahblahblahbah/
           highlight_color = to_print[:highlight][:color] || :blue
           highlight_background = to_print[:highlight][:background] || :default
@@ -169,11 +191,12 @@ class ConsoleTable
   def calc_column_widths()
     @column_widths = []
 
+    total_width = @set_width
     begin
       total_width = TermInfo.screen_columns
     rescue => ex
       total_width = ENV["COLUMNS"].to_i || 79
-    end
+    end if total_width.nil?
 
     keys = @original_column_layout.reject{|d| d[:key].nil?}.collect { |d| d[:key] }.uniq
     if keys.length < @original_column_layout.length
