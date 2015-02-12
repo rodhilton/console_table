@@ -1,0 +1,2 @@
+:border=>true on options, uses | instead of " " to space and adds 2 to the spacer count. prepends if true
+perhaps :border=>:thin, :thick, thin does above, thick also adds a row of --'s between, or even smartly uses +'s for joins
