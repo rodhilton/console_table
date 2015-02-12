@@ -470,13 +470,146 @@ Short1                      Short2                      Short3
 
     expected=<<-END
 =========================================
-Column 1             Column 2
------------------------------------------
 This is just a string, it should ignore c
 =========================================
     END
 
-    puts @mock_out.string
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_printing_a_single_after_data_makes_headings_show_up
+    table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1"},
+        {:key=>:col2, :size=>20, :title=>"Column 2"},
+    ]
+
+    ConsoleTable.define(table_config, :width=> 100, :output=>@mock_out) do |table|
+      table << ["One", "Two"]
+      table << "This is just a string, it should ignore columns"
+      table << ["One", "Two"]
+    end
+
+    expected=<<-END
+=========================================
+Column 1             Column 2
+-----------------------------------------
+One                  Two
+This is just a string, it should ignore c
+One                  Two
+=========================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_can_have_a_bordered_table
+    table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1"},
+        {:key=>:col2, :size=>0.3, :title=>"Column 2"},
+        {:key=>:col3, :size=>10, :title=>"Column 3", :justify=>:center},
+        {:key=>:col4, :size=>"*", :title=>"Column 4", :justify=>:center}
+    ]
+
+    ConsoleTable.define(table_config, :left_margin=>10, :right_margin=>7, :width=> 100, :title=>"Test Title", :borders=>true, :output=>@mock_out) do |table|
+      (1..5).each do |row|
+        table << (1..4).collect{|i| "Row #{row}, Column #{i}"}
+      end
+
+      table << "Plain line needs borders"
+      table.footer << "Footer needs borders"
+      table.footer << "Footer still \n needs borders"
+
+    end
+
+    expected=<<-END
+          *================================================================================*
+          |                                   Test Title                                   |
+          +--------------------+--------------+----------+---------------------------------+
+          |Column 1            |Column 2      | Column 3 |            Column 4             |
+          +--------------------+--------------+----------+---------------------------------+
+          |Row 1, Column 1     |Row 1, Column |Row 1, Col|         Row 1, Column 4         |
+          +--------------------+--------------+----------+---------------------------------+
+          |Row 2, Column 1     |Row 2, Column |Row 2, Col|         Row 2, Column 4         |
+          +--------------------+--------------+----------+---------------------------------+
+          |Row 3, Column 1     |Row 3, Column |Row 3, Col|         Row 3, Column 4         |
+          +--------------------+--------------+----------+---------------------------------+
+          |Row 4, Column 1     |Row 4, Column |Row 4, Col|         Row 4, Column 4         |
+          +--------------------+--------------+----------+---------------------------------+
+          |Row 5, Column 1     |Row 5, Column |Row 5, Col|         Row 5, Column 4         |
+          +--------------------+--------------+----------+---------------------------------+
+          |Plain line needs borders                                                        |
+          +--------------------+--------------+----------+---------------------------------+
+          |                                                            Footer needs borders|
+          |                                                                    Footer still|
+          |                                                                   needs borders|
+          *================================================================================*
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_outline_joins_only_when_no_footer_or_header
+    table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1"},
+        {:key=>:col2, :size=>0.3, :title=>"Column 2"},
+        {:key=>:col3, :size=>10, :title=>"Column 3", :justify=>:center},
+        {:key=>:col4, :size=>"*", :title=>"Column 4", :justify=>:center}
+    ]
+
+    #borders are true, so outline false should be ignored
+    ConsoleTable.define(table_config, :left_margin=>10, :right_margin=>7, :width=> 100, :borders=>true, :outline=>false, :output=>@mock_out) do |table|
+      (1..5).each do |row|
+        table << (1..4).collect{|i| "Row #{row}, Column #{i}"}
+      end
+
+      table << "Plain line needs borders"
+
+    end
+
+    expected=<<-END
+          *====================*==============*==========*=================================*
+          |Column 1            |Column 2      | Column 3 |            Column 4             |
+          +--------------------+--------------+----------+---------------------------------+
+          |Row 1, Column 1     |Row 1, Column |Row 1, Col|         Row 1, Column 4         |
+          +--------------------+--------------+----------+---------------------------------+
+          |Row 2, Column 1     |Row 2, Column |Row 2, Col|         Row 2, Column 4         |
+          +--------------------+--------------+----------+---------------------------------+
+          |Row 3, Column 1     |Row 3, Column |Row 3, Col|         Row 3, Column 4         |
+          +--------------------+--------------+----------+---------------------------------+
+          |Row 4, Column 1     |Row 4, Column |Row 4, Col|         Row 4, Column 4         |
+          +--------------------+--------------+----------+---------------------------------+
+          |Row 5, Column 1     |Row 5, Column |Row 5, Col|         Row 5, Column 4         |
+          +--------------------+--------------+----------+---------------------------------+
+          |Plain line needs borders                                                        |
+          *====================*==============*==========*=================================*
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_can_have_no_outline_if_requested
+    table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1"},
+        {:key=>:col2, :size=>0.3, :title=>"Column 2"},
+    ]
+
+    ConsoleTable.define(table_config, :width=>60, :outline=>false, :title=>"Still has a title", :output=>@mock_out) do |table|
+      (1..5).each do |row|
+        table << (1..2).collect{|i| "Row #{row}, Column #{i}"}
+      end
+
+    end
+
+    expected=<<-END
+       Still has a title
+Column 1             Column 2
+--------------------------------
+Row 1, Column 1      Row 1, Colu
+Row 2, Column 1      Row 2, Colu
+Row 3, Column 1      Row 3, Colu
+Row 4, Column 1      Row 4, Colu
+Row 5, Column 1      Row 5, Colu
+    END
 
     assert_output_equal expected, @mock_out.string
   end

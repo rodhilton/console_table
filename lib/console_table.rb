@@ -2,7 +2,7 @@ require 'colorize'
 require 'terminfo'
 
 module ConsoleTable
-  VERSION = "0.1.0"
+  VERSION = "0.1.1"
 
   def self.define(layout, options={}, &block)
     table = ConsoleTableClass.new(layout, options)
@@ -28,6 +28,16 @@ module ConsoleTable
       @out = options[:output] || $stdout
       @title = options[:title]
       @set_width = options[:width]
+      @borders = options[:borders] || false #Lines between every cell, implies outline
+
+      #Set outline, just the upper and lower lines
+      if @borders
+        @outline = true
+      elsif not options[:outline].nil?
+        @outline = options[:outline]
+      else
+        @outline = true
+      end
 
       @footer = []
 
@@ -39,39 +49,97 @@ module ConsoleTable
     end
 
     def print_header()
-      @out.print " " * @left_margin
-      @out.print "=" * @working_width
-      @out.print "\n"
+      if @title.nil?
+        print_line("=", "*", false)
+      else
+        print_line("=", "*", true)
+      end if @outline
 
       if not @title.nil? and @title.length <= @working_width
         @out.print " "*@left_margin
+        @out.print "|" if @borders
         left_side = (@working_width - @title.uncolorize.length)/2
         right_side = (@working_width - @title.uncolorize.length) - left_side
         @out.print " "*left_side
         @out.print @title
         @out.print " "*right_side
+        @out.print "|" if @borders
         @out.print "\n"
+        print_line if @borders
       end
     end
 
     def print_headings()
       @headings_printed = true
       @out.print " "*@left_margin
+      if @borders
+        @out.print "|"
+      end
 
       @column_widths.each_with_index do |column, i|
         justify = column[:justify] || :left
         title = (column[:title] || column[:key].to_s.capitalize).strip
         @out.print format(column[:size], title, false, justify)
-        @out.print " " if i < @column_widths.size-1
+
+        if @borders
+          @out.print "|"
+        else
+          @out.print " " if i < @column_widths.size-1
+        end
       end
       @out.print "\n"
 
-      @out.print " " * @left_margin
-      @out.print "-" * @working_width
-      @out.print "\n"
+      print_line unless @borders #this line will be printed when the NEXT LINE prints out if borders are on
+    end
+
+    def print_line(char="-", join_char="+", edge_join_only=false)
+      if @borders #use +'s to join columns
+        @out.print " " * @left_margin
+        @out.print join_char
+        @column_widths.each_with_index do |column, i|
+          @out.print char*column[:size]
+          if(edge_join_only and i < @column_widths.length - 1)
+            @out.print char
+          else
+            @out.print join_char
+          end
+        end
+        @out.print "\n"
+      else #just print long lines
+        @out.print " " * @left_margin
+        @out.print "#{char}" * (@working_width + (@borders ? 2 : 0))
+        @out.print "\n"
+      end
     end
 
     def print_footer()
+      if should_print_footer
+        print_line
+      end
+
+      footer_lines.each do |line|
+        if line.uncolorize.length <= @working_width
+          @out.print " " * @left_margin
+          @out.print "|" if @borders
+          @out.print " " * (@working_width - line.uncolorize.length)
+          @out.print line
+          @out.print "|" if @borders
+          @out.print "\n"
+        end
+      end
+
+      if should_print_footer
+        print_line("=", "*", true)
+      else
+        print_line("=", "*", false)
+      end if @outline
+    end
+
+    def should_print_footer
+      footer_lines.length > 0 && footer_lines.any? { |l| l.uncolorize.length <= @working_width }
+    end
+
+    def footer_lines
       footer_lines = []
       @footer.each do |line|
         lines = line.split("\n")
@@ -79,27 +147,7 @@ module ConsoleTable
           footer_lines << l.strip unless l.nil? or l.uncolorize.strip == ""
         end
       end
-
-      should_print_footer = footer_lines.length > 0 && footer_lines.any? { |l| l.uncolorize.length <= @working_width }
-
-      if should_print_footer
-        @out.print " " * @left_margin
-        @out.print "-" * @working_width
-        @out.print "\n"
-      end
-
-      footer_lines.each do |line|
-        if line.uncolorize.length <= @working_width
-          @out.print " " * @left_margin
-          @out.print " " * (@working_width - line.uncolorize.length)
-          @out.print line
-          @out.print "\n"
-        end
-      end
-
-      @out.print " " * @left_margin
-      @out.print "=" * @working_width
-      @out.print "\n"
+      footer_lines
     end
 
     def print(options)
@@ -120,7 +168,12 @@ module ConsoleTable
         options = munged_options
       end
 
+      print_line if @borders
+
       @out.print " "*@left_margin
+      if @borders
+        @out.print "|"
+      end
       #column order is set, so go through each column and look up values in the incoming options
       @column_widths.each_with_index do |column, i|
         to_print = options[column[:key]] || ""
@@ -163,7 +216,11 @@ module ConsoleTable
           @out.print format(column[:size], normalize(to_print.to_s))
         end
 
-        @out.print " " if i < @column_widths.size-1
+        if @borders
+          @out.print "|"
+        else
+          @out.print " " if i < @column_widths.size-1
+        end
       end
       @out.print "\n"
 
@@ -194,6 +251,7 @@ module ConsoleTable
       end
 
       num_spacers = @original_column_layout.length - 1
+      num_spacers = num_spacers + 2 if @borders
       set_sizes = @original_column_layout.collect { |x| x[:size] }.find_all { |x| x.is_a? Integer }
       used_up = set_sizes.inject(:+) || 0
       available = total_width - used_up - @left_margin - @right_margin - num_spacers
@@ -251,7 +309,10 @@ module ConsoleTable
     end
 
     def print_plain(to_print)
+      print_line if @borders
+
       @out.print " "*@left_margin
+      @out.print "|" if @borders
 
       if to_print.is_a? String
         @out.print format(@working_width, normalize(to_print))
@@ -270,6 +331,7 @@ module ConsoleTable
         @out.print formatted
       end
 
+      @out.print "|" if @borders
       @out.print "\n"
     end
   end
