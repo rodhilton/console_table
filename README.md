@@ -11,7 +11,7 @@ It can be used to generate output similar to this screenshot:
 
 You're able to specify left/right/center text justification, headers, footers, colors, and most importantly different sizes including exact character widths, screen percentages, and `*` for whatever is left.  If the window resizes the class will notice and output all new lines with recalculated locations (previous lines are not re-printed).
 
-**Note**: This project is _not_ like `hirb` and it makes no attempt to take any sort of ActiveRecord objects or an array of data and automatically fit the data to a nice table.  It gives much, much more control over to the developer in how the output is formatted, but is much more difficult to work with as a trade-off - you will have to go through each element of your data set and manually munge it into the format needed by ConsoleTable to print a line.  ConsoleTable is meant to save on a lot of math and calculation, but will not hold your hand for configuration, please consult the [Usage](#Usage) section for more details.
+**Note**: This project is _not_ like `hirb` and it makes no attempt to take any sort of ActiveRecord objects or an array of data and automatically fit the data to a nice table.  It gives much, much more control over to the developer in how the output is formatted, but is much more difficult to work with as a trade-off - you will have to go through each element of your data set and manually munge it into the format needed by ConsoleTable to print a line.  ConsoleTable is meant to save on a lot of math and calculation, but will do no analyzing of your data itself in order to format it, please consult the Usage section for more details.
 
 
 ## Installation
