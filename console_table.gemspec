@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = "console_table"
-  spec.version       = "0.0.4"
+  spec.version       = "0.0.5"
   spec.authors       = ["Rod Hilton"]
   spec.email         = ["consoletable@rodhilton.com"]
   spec.summary       = %q{Simplifies printing tables of information to commandline consoles}
@@ -22,4 +22,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'minitest', '~> 5.5'
 
   spec.add_runtime_dependency 'colorize', '~> 0.7'
+  spec.add_runtime_dependency 'ruby-terminfo', '~> 0.1'
 end

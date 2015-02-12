@@ -144,6 +144,60 @@ Row 2, Column 1      Row 2, Column 1                         Row 2, Column 3
     assert_output_equal expected, @mock_out.string
   end
 
+  def test_no_size_assumed_to_be_star
+    ENV["COLUMNS"] = "40"
+
+    commit_table_config = [
+        {:key=>:col1, :title=>"Column 1"},
+        {:key=>:col2, :title=>"Column 2"},
+    ]
+
+    ConsoleTable.define(commit_table_config, :output=>@mock_out) do |table|
+      table.print({
+                      :col1 => "Row 1, Column 1",
+                      :col2 => "Row 1, Column 2",
+                  })
+
+    end
+
+    expected=<<-END
+===============================================================================
+Column 1                                Column 2
+-------------------------------------------------------------------------------
+Row 1, Column 1                         Row 1, Column 2
+===============================================================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_no_name_defaulted_to_capitalize_of_key_name
+    ENV["COLUMNS"] = "40"
+
+    commit_table_config = [
+        {:key=>:col1},
+        {:key=>:col2},
+    ]
+
+    ConsoleTable.define(commit_table_config, :output=>@mock_out) do |table|
+      table.print({
+                      :col1 => "Row 1, Column 1",
+                      :col2 => "Row 1, Column 2",
+                  })
+
+    end
+
+    expected=<<-END
+===============================================================================
+Col1                                    Col2
+-------------------------------------------------------------------------------
+Row 1, Column 1                         Row 1, Column 2
+===============================================================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
   def test_can_combine_percentages_fixed_and_stars
     ENV["COLUMNS"] = "160"
 
@@ -230,6 +284,17 @@ Row 2, Column 1      Row 2, Column 2                      Row  Row 2, Column 4  
     commit_table_config = [
         {:key=>:col1, :size=>20, :title=>"Column 1"},
         {:key=>:col1, :size=>20, :title=>"Column 2"},
+    ]
+
+    assert_raises(RuntimeError) { ConsoleTable.define(commit_table_config) }
+  end
+
+  def test_wont_allow_columns_with_no_key_name
+    ENV["COLUMNS"] = "50"
+
+    commit_table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1"},
+        {:size=>20, :title=>"Column 2"},
     ]
 
     assert_raises(RuntimeError) { ConsoleTable.define(commit_table_config) }

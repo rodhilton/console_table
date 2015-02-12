@@ -1,4 +1,5 @@
 require 'colorize'
+require 'terminfo'
 
 class ConsoleTable
 
@@ -47,7 +48,7 @@ class ConsoleTable
 
     @column_widths.each_with_index do |column, i|
       justify = column[:justify] || :left
-      title = column[:title].strip
+      title = (column[:title] || column[:key].to_s.capitalize).strip
       @out.print format(column[:size], title, false, justify)
       @out.print " " if i < @column_widths.size-1
     end
@@ -61,7 +62,7 @@ class ConsoleTable
   def add_footer(line)
     lines = line.split("\n")
     lines.each do |l|
-      @footer_lines << l.strip unless l.nil? or l.uncolorize.strip.blank?
+      @footer_lines << l.strip unless l.nil? or l.uncolorize.strip == ""
     end
   end
 
@@ -171,10 +172,10 @@ class ConsoleTable
     begin
       total_width = TermInfo.screen_columns
     rescue => ex
-      total_width = ENV["COLUMNS"].to_i || 150
+      total_width = ENV["COLUMNS"].to_i || 79
     end
 
-    keys = @original_column_layout.collect { |d| d[:key] }.uniq
+    keys = @original_column_layout.reject{|d| d[:key].nil?}.collect { |d| d[:key] }.uniq
     if keys.length < @original_column_layout.length
       raise("ConsoleTable configuration invalid, same key defined more than once")
     end
@@ -196,7 +197,7 @@ class ConsoleTable
     end
 
     percent_available = 1 - percent_used
-    stars = @original_column_layout.collect { |x| x[:size] }.find_all { |x| x.is_a? String }
+    stars = @original_column_layout.collect { |x| x[:size] or x[:size].nil?}.find_all { |x| x.is_a? String }
     num_stars = [stars.length, 1].max
     percent_for_stars = percent_available.to_f / num_stars
 
@@ -205,7 +206,7 @@ class ConsoleTable
         @column_widths << column_config #As-is when integer
       elsif column_config[:size].is_a? Float
         @column_widths << column_config.merge({:size => (column_config[:size]*available).floor})
-      elsif column_config[:size].is_a?(String) && column_config[:size] == "*"
+      elsif column_config[:size].nil? or column_config[:size].is_a?(String) && column_config[:size] == "*"
         @column_widths << column_config.merge({:size => (percent_for_stars*available).floor})
       else
         raise("ConsoleTable configuration invalid, '#{column_config[:size]}' is not a valid size")
