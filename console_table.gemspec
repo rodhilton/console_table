@@ -1,10 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'console_table'
 
 Gem::Specification.new do |spec|
   spec.name          = "console_table"
-  spec.version       = "0.0.7"
+  spec.version       = ConsoleTable::VERSION
   spec.authors       = ["Rod Hilton"]
   spec.email         = ["consoletable@rodhilton.com"]
   spec.summary       = %q{Simplifies printing tables of information to commandline consoles}

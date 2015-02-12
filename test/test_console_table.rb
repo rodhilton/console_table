@@ -18,15 +18,15 @@ class ConsoleTableTest < Minitest::Test
     ]
 
     ConsoleTable.define(table_config, :width=> 100, :output=>@mock_out) do |table|
-      table.print({
-                      :col1 => "Row 1, Column 1",
-                      :col2 => "Row 1, Column 2"
-                  })
+      table << {
+          :col1 => "Row 1, Column 1",
+          :col2 => "Row 1, Column 2"
+      }
 
-      table.print({
-                      :col1 => "Row 2, Column 1",
-                      :col2 => "Row 2, Column 1"
-                  })
+      table << {
+          :col1 => "Row 2, Column 1",
+          :col2 => "Row 2, Column 1"
+      }
     end
 
 #2345678901234567890##2345678901234567890
@@ -109,15 +109,12 @@ Row 1, Column 1      Row 1, Column 2
     ]
 
     ConsoleTable.define(table_config, :width=> 100, :output=>@mock_out) do |table|
-      table.print({
-                      :col1 => "Row 1, Column 1",
-                      :col2 => "Row 1, Column 2"
-                  })
+      table << {
+          :col1 => "Row 1, Column 1",
+          :col2 => "Row 1, Column 2"
+      }
 
-      table.print({
-                      :col1 => "Row 2, Column 1",
-                      :col2 => "Row 2, Column 1"
-                  })
+      table << ["Row 2, Column 1", "Row 2, Column 1"]
     end
 
     expected=<<-END
@@ -139,15 +136,15 @@ Row 2, Column 1               Row 2, Column 1
     ]
 
     ConsoleTable.define(table_config, :width=> 100, :output=>@mock_out) do |table|
-      table.print({
-                      :col1 => "Row 1, Column 1",
-                      :col2 => "Row 1, Column 2"
-                  })
+      table << {
+          :col1 => "Row 1, Column 1",
+          :col2 => "Row 1, Column 2"
+      }
 
-      table.print({
-                      :col1 => "Row 2, Column 1",
-                      :col2 => "Row 2, Column 1"
-                  })
+      table << {
+          :col1 => "Row 2, Column 1",
+          :col2 => "Row 2, Column 1"
+      }
     end
 
     expected=<<-END
@@ -170,17 +167,17 @@ Row 2, Column 1      Row 2, Column 1
     ]
 
     ConsoleTable.define(table_config, :width=> 100, :output=>@mock_out) do |table|
-      table.print({
-                      :col1 => "Row 1, Column 1",
-                      :col2 => "Row 1, Column 2",
-                      :col3 => "Row 1, Column 3"
-                  })
+      table << {
+          :col1 => "Row 1, Column 1",
+          :col2 => "Row 1, Column 2",
+          :col3 => "Row 1, Column 3"
+      }
 
-      table.print({
-                      :col1 => "Row 2, Column 1",
-                      :col2 => "Row 2, Column 1",
-                      :col3 => "Row 2, Column 3"
-                  })
+      table << {
+          :col1 => "Row 2, Column 1",
+          :col2 => "Row 2, Column 1",
+          :col3 => "Row 2, Column 3"
+      }
     end
 
     expected=<<-END
@@ -202,10 +199,10 @@ Row 2, Column 1      Row 2, Column 1                         Row 2, Column 3
     ]
 
     ConsoleTable.define(table_config, :width=> 40, :output=>@mock_out) do |table|
-      table.print({
-                      :col1 => "Row 1, Column 1",
-                      :col2 => "Row 1, Column 2",
-                  })
+      table << {
+          :col1 => "Row 1, Column 1",
+          :col2 => "Row 1, Column 2",
+      }
 
     end
 
@@ -227,10 +224,10 @@ Row 1, Column 1                         Row 1, Column 2
     ]
 
     ConsoleTable.define(table_config, :width=> 40, :output=>@mock_out) do |table|
-      table.print({
-                      :col1 => "Row 1, Column 1",
-                      :col2 => "Row 1, Column 2",
-                  })
+      table << {
+          :col1 => "Row 1, Column 1",
+          :col2 => "Row 1, Column 2",
+      }
 
     end
 
@@ -257,25 +254,25 @@ Row 1, Column 1                         Row 1, Column 2
     ]
 
     ConsoleTable.define(table_config, :width=> 160, :output=>@mock_out) do |table|
-      table.print({
-                      :col1 => "Row 1, Column 1",
-                      :col2 => "Row 1, Column 2",
-                      :col3 => "Row 1, Column 3",
-                      :col4 => "Row 1, Column 4",
-                      :col5 => "Row 1, Column 5",
-                      :col6 => "Row 1, Column 6",
-                      :col7 => "Row 1, Column 7",
-                  })
+      table << {
+          :col1 => "Row 1, Column 1",
+          :col2 => "Row 1, Column 2",
+          :col3 => "Row 1, Column 3",
+          :col4 => "Row 1, Column 4",
+          :col5 => "Row 1, Column 5",
+          :col6 => "Row 1, Column 6",
+          :col7 => "Row 1, Column 7",
+      }
 
-      table.print({
-                      :col1 => "Row 2, Column 1",
-                      :col2 => "Row 2, Column 2",
-                      :col3 => "Row 2, Column 3",
-                      :col4 => "Row 2, Column 4",
-                      :col5 => "Row 2, Column 5",
-                      :col6 => "Row 2, Column 6",
-                      :col7 => "Row 2, Column 7",
-                  })
+      table << {
+          :col1 => "Row 2, Column 1",
+          :col2 => "Row 2, Column 2",
+          :col3 => "Row 2, Column 3",
+          :col4 => "Row 2, Column 4",
+          :col5 => "Row 2, Column 5",
+          :col6 => "Row 2, Column 6",
+          :col7 => "Row 2, Column 7",
+      }
     end
 
     expected=<<-END
@@ -341,17 +338,14 @@ Row 2, Column 1      Row 2, Column 2                      Row  Row 2, Column 4  
     ]
 
     ConsoleTable.define(table_config, :width=> 100, :output=>@mock_out) do |table|
-      table.print({
-                      :col1 => "This is short"
-                  })
+      table << ["This is short"]
 
-      table.print({
-                      :col1 => "This is way too long and it needs to get cut off"
-                  })
+      table << {:col1=>"This is way too long and it needs to get cut off"}
 
-      table.print({
-                      :col1 => {:text=>"This is way too long and it needs to get cut off", :ellipsize=>true}
-                  })
+      table << [
+          {:text=>"This is way too long and it needs to get cut off", :ellipsize=>true}
+      ]
+
     end
 
     expected=<<-END
@@ -375,23 +369,23 @@ This is way too l...
     ]
 
     ConsoleTable.define(table_config, :width=> 100, :output=>@mock_out) do |table|
-      table.print({
-                      :col1 => "Short1",
-                      :col2 => "Short2",
-                      :col3 => "Short3"
-                  })
+      table << {
+        :col1 => "Short1",
+        :col2 => "Short2",
+        :col3 => "Short3"
+      }
 
-      table.print({
-                      :col1 => {text: "Short1"},
-                      :col2 => {text: "Short2"},
-                      :col3 => {text: "Short3"}
-                  })
+      table << {
+        :col1 => {text: "Short1"},
+        :col2 => {text: "Short2"},
+        :col3 => {text: "Short3"}
+      }
 
-      table.print({
-                      :col1 => {text: "Short1", :justify=>:center},
-                      :col2 => {text: "Short2", :justify=>:right},
-                      :col3 => {text: "Short3", :justify=>:left}
-                  })
+      table << {
+          :col1 => {text: "Short1", :justify=>:center},
+          :col2 => {text: "Short2", :justify=>:right},
+          :col3 => {text: "Short3", :justify=>:left}
+      }
     end
 
     expected=<<-END
@@ -417,19 +411,19 @@ Short1                      Short2                      Short3
     ]
 
     ConsoleTable.define(table_config, :left_margin=>5, :right_margin=>10, :width=>80, :title=>"Movie Killers", :output=>@mock_out) do |table|
-      table.print({
-                      :title=>{:text=>"Friday the 13th"},
-                      :name=>{:text=>"Jason's Mom", :justify=>:left},
-                      :release_date=>{text: "05-09-80"},
-                      :tagline=>{:text=>"They were warned...They are doomed...And on Friday the 13th, nothing will save them.", :ellipsize=>true}
-                  })
+      table << {
+          :title=>{:text=>"Friday the 13th"},
+          :name=>{:text=>"Jason's Mom", :justify=>:left},
+          :release_date=>{text: "05-09-80"},
+          :tagline=>{:text=>"They were warned...They are doomed...And on Friday the 13th, nothing will save them.", :ellipsize=>true}
+      }
 
-      table.print({
-                      :title=>{:text=>"Halloween"},
-                      :name=>{:text=>"Michael Meyers", :justify=>:left},
-                      :release_date=>{text: "10-25-80"},
-                      :tagline=>{:text=>"Everyone is entitled to one good scare", :ellipsize=>true}
-                  })
+      table << {
+          :title=>{:text=>"Halloween"},
+          :name=>{:text=>"Michael Meyers", :justify=>:left},
+          :release_date=>{text: "10-25-80"},
+          :tagline=>{:text=>"Everyone is entitled to one good scare", :ellipsize=>true}
+      }
 
       table << {
           :title=>{:text=>"Nightmare on Elm St."},
@@ -440,8 +434,8 @@ Short1                      Short2                      Short3
 
       table << ["Hellraiser", "Pinhead", "9-18-87", "Demon to some. Angel to others."]
 
-      table.add_footer("This is just a line of footer text")
-      table.add_footer("This is a second footer with \nlots of \nlinebreaks in it.")
+      table.footer << "This is just a line of footer text"
+      table.footer << "This is a second footer with \nlots of \nlinebreaks in it."
     end
 
     expected=<<-END
@@ -460,6 +454,29 @@ Short1                      Short2                      Short3
                                                      linebreaks in it.
      =================================================================
     END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_printing_a_single_string_does_full_line
+    table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1"},
+        {:key=>:col2, :size=>20, :title=>"Column 2"},
+    ]
+
+    ConsoleTable.define(table_config, :width=> 100, :output=>@mock_out) do |table|
+      table << "This is just a string, it should ignore columns"
+    end
+
+    expected=<<-END
+=========================================
+Column 1             Column 2
+-----------------------------------------
+This is just a string, it should ignore c
+=========================================
+    END
+
+    puts @mock_out.string
 
     assert_output_equal expected, @mock_out.string
   end

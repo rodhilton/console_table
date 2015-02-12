@@ -60,12 +60,12 @@ Once we have our table, we must print to it.  Printing a line of data means supp
 
 ```ruby
 ConsoleTable.define(table_config) do |table|
-	table.print({
+	table << {
 		:name=>"Rod",
 		:birthday=>"04-14-80",
 		:nickname=>"Chainsaw",
 		:motto=>"It works on my machine"
-	})
+	}
 end
 ```
 
@@ -90,12 +90,12 @@ table_config = [
 ]
 
 ConsoleTable.define(table_config) do |table|
-	table.print({
+	table << {
 		:name=>"Rod",
 		:birthday=>"04-14-80",
 		:nickname=>{:text=>"Chainsaw", :justify=>:left},
 		:motto=>"It works on my machine"
-	})
+	}
 end
 ```
 
@@ -122,12 +122,12 @@ table_config = [
 ]
 
 ConsoleTable.define(table_config) do |table|
-	table.print({
+	table << {
 		:name=>{:text=>"Rod", :highlight=>{:regex=>/[A-Z]/, :color=>:red},
 		:birthday=>{text: "04-14-80", :color=>:blue},
 		:nickname=>{:text=>"Chainsaw", :justify=>:left},
 		:motto=>{:text=>"This is a very long motto, I don't mind if it gets cut off but I'd like it to indicate as such with ellipses", :ellipsize=>true}
-	})
+	}
 end
 ```
 
@@ -156,19 +156,19 @@ table_config = [
 ]
 
 ConsoleTable.define(table_config, :left_margin=>5, :right_margin=>10, :title=>"Movie Killers") do |table|
-	table.print({
+	table << {
 		:title=>{:text=>"Friday the 13th", :highlight=>{:regex=>/[A-Z]/, :color=>:red}},
 		:name=>{:text=>"Jason's Mom", :justify=>:left},
 		:release_date=>{text: "05-09-80", :color=>:blue},
 		:tagline=>{:text=>"They were warned...They are doomed...And on Friday the 13th, nothing will save them.", :ellipsize=>true}
-	})
+	}
 
-	table.print({
+	table << {
 		:title=>{:text=>"Halloween", :highlight=>{:regex=>/[A-Z]/, :color=>:red}, :background=>:orange},
 		:name=>{:text=>"Michael Meyers", :justify=>:left},
 		:release_date=>{text: "10-25-80", :color=>:blue},
 		:tagline=>{:text=>"Everyone is entitled to one good scare", :ellipsize=>true}
-	})
+	}
 
 	table << {
 		:title=>{:text=>"Nightmare on Elm St.", :highlight=>{:regex=>/[A-Z]/, :color=>:red}, :background=>:orange},
@@ -179,8 +179,8 @@ ConsoleTable.define(table_config, :left_margin=>5, :right_margin=>10, :title=>"M
 
 	table << ["Hellraiser", "Pinhead", "9-18-87", "Demon to some. Angel to others."]
 
-	table.add_footer("This is just a line of footer text")
-	table.add_footer("This is a second footer with \nlots of \nlinebreaks in it.")
+	table.footer << "This is just a line of footer text"
+	table.footer << "This is a second footer with \nlots of \nlinebreaks in it."
 end
 ```
 
@@ -202,7 +202,7 @@ end
      =================================================================
 ```
 
-Note the alternative method of calling print (`<<`) and the fact that you can also supply an array instead of a hash, and ConsoleTable will infer from the array order which value goes in what column
+Note the alternative method of calling `<<` where you can supply an Array instead of a hash, and ConsoleTable will infer from the array order which value goes in what column
 
 ## Contributing
 
