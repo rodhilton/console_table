@@ -1,7 +1,7 @@
-require 'test/unit'
-require '../lib/console_table'
+require 'minitest/autorun'
+require 'console_table'
 
-class ConsoleTableTest < Test::Unit::TestCase
+class ConsoleTableTest < Minitest::Test
 
   def setup
     @mock_out = StringIO.new
@@ -199,7 +199,7 @@ Row 2, Column 1      Row 2, Column 2                      Row  Row 2, Column 4  
         {:key=>:col1, :size=>20, :title=>"Column 2"},
     ]
 
-    assert_raise(RuntimeError) { ConsoleTable.define(commit_table_config) }
+    assert_raises(RuntimeError) { ConsoleTable.define(commit_table_config) }
   end
 
   def test_wont_create_layout_with_more_than_100_percent
@@ -210,7 +210,7 @@ Row 2, Column 1      Row 2, Column 2                      Row  Row 2, Column 4  
         {:key=>:col1, :size=>0.3, :title=>"Column 2"},
     ]
 
-    assert_raise(RuntimeError) { ConsoleTable.define(commit_table_config) }
+    assert_raises(RuntimeError) { ConsoleTable.define(commit_table_config) }
   end
 
   def test_wont_create_layout_with_invalid_size
@@ -221,7 +221,7 @@ Row 2, Column 1      Row 2, Column 2                      Row  Row 2, Column 4  
         {:key=>:col1, :size=>"hello!", :title=>"Column 2"},
     ]
 
-    assert_raise(RuntimeError) { ConsoleTable.define(commit_table_config) }
+    assert_raises(RuntimeError) { ConsoleTable.define(commit_table_config) }
   end
 
   private
