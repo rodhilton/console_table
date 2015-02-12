@@ -159,7 +159,7 @@ table_config = [
 ConsoleTable.define(table_config, :left_margin=>5, :right_margin=>10, :title=>"Movie Killers") do |table|
 	table.print({
 		:title=>{:text=>"Friday the 13th", :highlight=>{:regex=>/[A-Z]/, :color=>:red}},
-		:name=>{:text=>"Jason", :justify=>:left},
+		:name=>{:text=>"Jason's Mom", :justify=>:left},
 		:release_date=>{text: "05-09-80", :color=>:blue},
 		:tagline=>{:text=>"They were warned...They are doomed...And on Friday the 13th, nothing will save them.", :ellipsize=>true}
 	})
@@ -182,7 +182,7 @@ end
                                Movie Killers
      Movie Title     Name            Release                     Motto
      -----------------------------------------------------------------
-     Friday the 13th Jason           05-09-80 They were warned...Th...
+     Friday the 13th Jason's Mom     05-09-80 They were warned...Th...
      Halloween       Michael Meyers  10-25-80 Everyone is entitled ...
      -----------------------------------------------------------------
                                     This is just a line of footer text
