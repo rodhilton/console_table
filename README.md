@@ -7,7 +7,7 @@ truncated or padded as needed to fit your specifications.
 
 It can be used to generate output similar to this screenshot:
 
-![image](console_table_screenshot.png =700x)
+![image](console_table_screenshot.png)
 
 You're able to specify left/right/center text justification, headers, footers, colors, and most importantly different sizes including exact character widths, screen percentages, and `*` for whatever is left.  If the window resizes the class will notice and output all new lines with recalculated locations (previous lines are not re-printed).
 
