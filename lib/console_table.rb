@@ -1,6 +1,3 @@
-require "console_table/version"
-
-# Helper Class, formats output tables in the console.  Poorly documented, check examples of usage in this script
 class ConsoleTable
 
   def self.define(layout, options, &block)

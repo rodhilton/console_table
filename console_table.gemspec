@@ -5,7 +5,7 @@ require 'console_table/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "console_table"
-  spec.version       = ConsoleTable::VERSION
+  spec.version       = "0.0.2"
   spec.authors       = ["Rod Hilton"]
   spec.email         = ["consoletable@rodhilton.com"]
   spec.summary       = %q{Simplifies printing tables of information to commandline consoles}
