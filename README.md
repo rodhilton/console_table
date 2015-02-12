@@ -1,3 +1,7 @@
+#NOTE: I just pulled this code out of a skunkworks project into a gem, readme and tests coming soon.  Would not recommend this gem for any critical-path work at this time
+
+---
+
 # ConsoleTable
 
 TODO: Write a gem description
