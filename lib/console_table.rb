@@ -22,12 +22,15 @@ module ConsoleTable
 
     def initialize(column_layout, options={})
       @original_column_layout = column_layout
+
+      #Mostly used for mocking/testing
+      @out = options[:output] || $stdout
+      @set_width = options[:width]
+
+      @title = options[:title]
+      @borders = options[:borders] || false #Lines between every cell, implies outline
       @left_margin = options[:left_margin] || 0
       @right_margin = options[:right_margin] || 0
-      @out = options[:output] || $stdout
-      @title = options[:title]
-      @set_width = options[:width]
-      @borders = options[:borders] || false #Lines between every cell, implies outline
 
       #Set outline, just the upper and lower lines
       if @borders
@@ -39,7 +42,6 @@ module ConsoleTable
       end
 
       @footer = []
-
       @headings_printed = false
       @count = 0
 
@@ -48,6 +50,8 @@ module ConsoleTable
     end
 
     def print_header()
+      #Kind of weird but basically if there's a title, there will be a space between the top border and the actual data, meaning we don't
+      #want special characters printed for the "joining" of the lines.  If there's no title, however, we do.
       if @title.nil?
         print_line("=", "*", false)
       else
@@ -66,6 +70,7 @@ module ConsoleTable
 
     def print_headings()
       @headings_printed = true
+
       @out.print " "*@left_margin
       if @borders
         @out.print "|"
@@ -73,8 +78,9 @@ module ConsoleTable
 
       @column_widths.each_with_index do |column, i|
         justify = column[:justify] || :left
+        ellipsize = column[:ellipsize] || false
         title = (column[:title] || column[:key].to_s.capitalize).strip
-        @out.print format(column[:size], title, false, justify)
+        @out.print format(column[:size], title, ellipsize, justify)
 
         if @borders
           @out.print "|"
@@ -84,7 +90,7 @@ module ConsoleTable
       end
       @out.print "\n"
 
-      print_line unless @borders #this line will be printed when the NEXT LINE prints out if borders are on
+      print_line unless @borders #this line will be printed when the NEXT LINE of actual data prints out if borders are on, because that call PRE-prints the separator line
     end
 
     def print_line(char="-", join_char="+", edge_join_only=false)
@@ -107,6 +113,8 @@ module ConsoleTable
       end
     end
 
+    #TODO: it's a little weird how, if a footer is too long, it simply doesn't print at all.  This seems like not what someone would want to have happen.
+    #Could we take footer lines and split them every X characters where X is the working width, then use those?  Long lines effectively wrap, but not on word boundaries
     def print_footer()
       if should_print_footer
         print_line
@@ -220,9 +228,7 @@ module ConsoleTable
       if string.nil?
         nil
       else
-        require 'pp'
         normalized = string.to_s
-
         normalized = normalized.sub(/^(\e\[\d[^m]*?m)(\s+)/, '\2\1') #Any leading spaces preceeded by a color code should be swapped with the color code itself, so the spaces themselves aren't colored
         normalized = normalized.sub(/(\s+)(\e\[\d[^m]*?m)$/, '\2\1')
         normalized = normalized.gsub(/\s+/, " ").strip #Primarily to remove any tabs or newlines
@@ -300,7 +306,7 @@ module ConsoleTable
 
         parts = text.scan(/(\e\[\d.*?m)|(.)/) #The idea here is to break the string up into control codes and single characters
         #We're going to now count up until we hit goal length, but we're not going to ever count control codes against the count
-        #We're also going to keep track of if the last thing was a color code, so we know to reset if a color is "active"
+        #We're also going to keep track of if a non-resetting control code is 'active', so we know to reset at the end if need-be
 
         #I can't think of a better way to do this, it's probably dumb
         current_length = 0
@@ -331,15 +337,15 @@ module ConsoleTable
 
         final_string_parts.join("")
       else
+        space = length-uncolorized.length
         if justify == :right
-          (" "*(length-uncolorized.length)) + text
+          (" "*space) + text
         elsif justify == :center
-          space = length-uncolorized.length
           left_side = space/2
           right_side = space - left_side
           (" " * left_side) + text + (" "*right_side)
         else #assume left
-          text + (" "*(length-uncolorized.length))
+          text + (" "*space)
         end
       end
     end
