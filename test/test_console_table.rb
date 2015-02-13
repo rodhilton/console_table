@@ -626,15 +626,6 @@ Row 2, Column 1      Row 2, Column 2                      Row  Row 2, Column 4  
     assert_raises(RuntimeError) { ConsoleTable.define(table_config) }
   end
 
-  def test_wont_allow_columns_with_no_key_name
-    table_config = [
-        {:key=>:col1, :size=>20, :title=>"Column 1"},
-        {:size=>20, :title=>"Column 2"},
-    ]
-
-    assert_raises(RuntimeError) { ConsoleTable.define(table_config) }
-  end
-
   def test_can_truncate_output
     table_config = [
         {:key=>:col1, :size=>20, :title=>"Column 1"}
