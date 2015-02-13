@@ -1,5 +1,6 @@
 require 'minitest/autorun'
 require 'console_table'
+require 'colorize'
 
 class ConsoleTableTest < Minitest::Test
 
@@ -512,7 +513,7 @@ One                  Two
 
     ConsoleTable.define(table_config, :left_margin=>10, :right_margin=>7, :width=> 100, :title=>"Test Title", :borders=>true, :output=>@mock_out) do |table|
       (1..5).each do |row|
-        table << (1..4).collect{|i| "Row #{row}, Column #{i}"}
+        table << (1..4).collect{|i| "Row #{row}, Column #{i}".red}
       end
 
       table << "Plain line needs borders"
@@ -614,6 +615,48 @@ Row 5, Column 1      Row 5, Colu
     assert_output_equal expected, @mock_out.string
   end
 
+  def test_can_use_colors_without_affecting_layout
+    table_config = [
+        {:key=>:col1, :size=>10, :title=>"Column 1", :justify=>:left},
+        {:key=>:col2, :size=>10, :title=>"Column 2", :justify=>:center},
+        {:key=>:col3, :size=>10, :title=>"Column 3", :justify=>:right},
+    ]
+
+    ConsoleTable.define(table_config, :width=> 120, :output=>@mock_out) do |table|
+      table << ["Short".blue, "Short".bold, "Short".red.on_blue]
+
+      table << ["Much much longer".blue, "Much much longer".bold, "Much much longer".red.on_blue]
+
+      table << [
+          {:text=>"Much much longer".blue, :ellipsize=>true},
+          {:text=>"Much much longer".underline, :ellipsize=>true},
+          {:text=>"Much much longer".on_magenta, :ellipsize=>true}
+      ]
+
+      table << [
+          {:text=>"Much much longer".yellow, :ellipsize=>true},
+          {:text=>"Normal, should reset", :ellipsize=>true},
+          {:text=>"Much much longer".bold, :ellipsize=>true}
+      ]
+    end
+
+    expected=<<-END
+================================
+Column 1    Column 2    Column 3
+--------------------------------
+Short        Short         Short
+Much much  Much much  Much much
+Much mu... Much mu... Much mu...
+Much mu... Normal,... Much mu...
+================================
+    END
+
+    assert_includes @mock_out.string, "\e[1;39;49mShort\e[0m"  #Should have normal color codes
+    assert_includes @mock_out.string, "\e[0;33;49mMuch mu...\e[0m"  #the cut-off one should keep the color code for ellipses, then reset
+
+    assert_output_equal expected, @mock_out.string
+  end
+
   private
   def assert_output_equal(expected, actual)
     expected_lines = expected.split("\n")
@@ -621,7 +664,7 @@ Row 5, Column 1      Row 5, Colu
     assert_equal expected_lines.length, actual_lines.length
     expected_lines.each_with_index do |expected_line, i|
       actual_line = actual_lines[i]
-      assert_equal expected_line.rstrip, actual_line.rstrip
+      assert_equal expected_line.uncolorize.rstrip, actual_line.uncolorize.rstrip
     end
 
   end

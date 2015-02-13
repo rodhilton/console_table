@@ -9,7 +9,7 @@ It can be used to generate output similar to this screenshot:
 
 ![image](console_table_screenshot.png)
 
-You're able to specify left/right/center text justification, headers, footers, colors, and most importantly different sizes including exact character widths, screen percentages, and `*` for whatever is left.  If the window resizes the class will notice and output all new lines with recalculated locations (previous lines are not re-printed).
+You're able to specify left/right/center text justification, headers, footers, and most importantly different sizes including exact character widths, screen percentages, and `*` for whatever is left.  If the window resizes the class will notice and output all new lines with recalculated locations (previous lines are not re-printed).
 
 **Note**: This project is _not_ like `hirb` and it makes no attempt to take any sort of ActiveRecord objects or an array of data and automatically fit the data to a nice table.  It gives much, much more control over to the developer in how the output is formatted, but is much more difficult to work with as a trade-off - you will have to go through each element of your data set and manually munge it into the format needed by ConsoleTable to print a line.  ConsoleTable is meant to save on a lot of math and calculation, but will do no analyzing of your data itself in order to format it, please consult the Usage section for more details.
 
@@ -123,8 +123,8 @@ table_config = [
 
 ConsoleTable.define(table_config) do |table|
 	table << {
-		:name=>{:text=>"Rod", :highlight=>{:regex=>/[A-Z]/, :color=>:red},
-		:birthday=>{text: "04-14-80", :color=>:blue},
+		:name=>"Rod".colorize(:red) #Uses 'colorize' gem
+		:birthday=>"04-14-80".blue,
 		:nickname=>{:text=>"Chainsaw", :justify=>:left},
 		:motto=>{:text=>"This is a very long motto, I don't mind if it gets cut off but I'd like it to indicate as such with ellipses", :ellipsize=>true}
 	}
@@ -141,7 +141,7 @@ Rod             04-14-80 Chainsaw         This is a very long motto, I don't...
 ===============================================================================
 ```
 
-Due to limitations of this readme format, you'll have to take my word for it that the capital letters in the Name are highlighted Red, and the DOB is blue.
+Due to limitations of this readme format, you'll have to take my word for it that the colors placed by the 'colorize' gem are preserved, and that the table correctly handles resetting ANSI colors when truncating messages that have formatting.
 
 You can also add a title and a footer to the table, or indent the entire table within the window using different options.  Again, here's another example that should more-or-less speak for itself.
 
@@ -158,23 +158,23 @@ table_config = [
 
 ConsoleTable.define(table_config, :left_margin=>5, :right_margin=>10, :title=>"Movie Killers") do |table|
 	table << {
-		:title=>{:text=>"Friday the 13th", :highlight=>{:regex=>/[A-Z]/, :color=>:red}},
+		:title=>"Friday the 13th"
 		:name=>{:text=>"Jason's Mom", :justify=>:left},
-		:release_date=>{text: "05-09-80", :color=>:blue},
+		:release_date=>"05-09-80".blue
 		:tagline=>{:text=>"They were warned...They are doomed...And on Friday the 13th, nothing will save them.", :ellipsize=>true}
 	}
 
 	table << {
-		:title=>{:text=>"Halloween", :highlight=>{:regex=>/[A-Z]/, :color=>:red}, :background=>:orange},
+		:title=>"Halloween".white.on_red,
 		:name=>{:text=>"Michael Meyers", :justify=>:left},
-		:release_date=>{text: "10-25-80", :color=>:blue},
+		:release_date=>"10-25-80".blue
 		:tagline=>{:text=>"Everyone is entitled to one good scare", :ellipsize=>true}
 	}
 
 	table << {
-		:title=>{:text=>"Nightmare on Elm St.", :highlight=>{:regex=>/[A-Z]/, :color=>:red}, :background=>:orange},
+		:title=>{:text=>"Nightmare on Elm St."}
 		:name=>{:text=>"Freddy Krueger", :justify=>:left},
-		:release_date=>{text: "11-16-84", :color=>:blue},
+		:release_date=>{text: "11-16-84".blue}
 		:tagline=>{:text=>"A scream that wakes you up, might be your own", :ellipsize=>true}
 	}
 

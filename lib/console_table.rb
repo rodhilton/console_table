@@ -1,8 +1,7 @@
-require 'colorize'
 require 'terminfo'
 
 module ConsoleTable
-  VERSION = "0.1.1"
+  VERSION = "0.1.2"
 
   def self.define(layout, options={}, &block)
     table = ConsoleTableClass.new(layout, options)
@@ -58,11 +57,7 @@ module ConsoleTable
       if not @title.nil? and @title.length <= @working_width
         @out.print " "*@left_margin
         @out.print "|" if @borders
-        left_side = (@working_width - @title.uncolorize.length)/2
-        right_side = (@working_width - @title.uncolorize.length) - left_side
-        @out.print " "*left_side
-        @out.print @title
-        @out.print " "*right_side
+        @out.print format(@working_width, @title, false, :center)
         @out.print "|" if @borders
         @out.print "\n"
         print_line if @borders
@@ -118,11 +113,10 @@ module ConsoleTable
       end
 
       footer_lines.each do |line|
-        if line.uncolorize.length <= @working_width
+        if uncolorize(line).length <= @working_width
           @out.print " " * @left_margin
           @out.print "|" if @borders
-          @out.print " " * (@working_width - line.uncolorize.length)
-          @out.print line
+          @out.print format(@working_width, line, false, :right)
           @out.print "|" if @borders
           @out.print "\n"
         end
@@ -136,7 +130,7 @@ module ConsoleTable
     end
 
     def should_print_footer
-      footer_lines.length > 0 && footer_lines.any? { |l| l.uncolorize.length <= @working_width }
+      footer_lines.length > 0 && footer_lines.any? { |l| uncolorize(l).length <= @working_width }
     end
 
     def footer_lines
@@ -144,7 +138,7 @@ module ConsoleTable
       @footer.each do |line|
         lines = line.split("\n")
         lines.each do |l|
-          footer_lines << l.strip unless l.nil? or l.uncolorize.strip == ""
+          footer_lines << l.strip unless l.nil? or uncolorize(l).strip == ""
         end
       end
       footer_lines
@@ -181,35 +175,11 @@ module ConsoleTable
         if to_print.is_a? String
           @out.print format(column[:size], normalize(to_print), false, justify)
         elsif to_print.is_a? Hash
-          color = to_print[:color] || :default
-          background = to_print[:background] || :default
           text = normalize(to_print[:text]) || ""
           ellipsize = to_print[:ellipsize] || false
-          highlight = to_print[:highlight]
           justify = to_print[:justify] || justify #can override
-          mode = to_print[:mode] || :default
 
           formatted=format(column[:size], text, ellipsize, justify)
-
-          if color != :default
-            formatted = formatted.colorize(color)
-          end
-
-          if background != :default
-            formatted = formatted.colorize(:background => background)
-          end
-
-          if mode != :default
-            formatted = formatted.colorize(:mode => mode)
-          end
-
-          unless highlight.nil?
-            highlight_regex = to_print[:highlight][:regex] || /wontbefoundbecauseit'sgobbledygookblahblahblahbah/
-            highlight_color = to_print[:highlight][:color] || :blue
-            highlight_background = to_print[:highlight][:background] || :default
-
-            formatted = formatted.gsub(highlight_regex, '\0'.colorize(:color => highlight_color, :background => highlight_background))
-          end
 
           @out.print formatted
         else
@@ -287,23 +257,64 @@ module ConsoleTable
       @working_width = (@column_widths.inject(0) { |res, c| res+c[:size] }) + @column_widths.length - 1
     end
 
+
+    def uncolorize(string)
+      string.gsub(/\e\[\d.*?m/m, "")
+    end
+
+    #TODO: if you're doing center or right-justification, should it trim from the sides or from the left, respectively?
     def format(length, text, ellipsize=false, justify=:left)
-      if text.length > length
+      uncolorized = uncolorize(text)
+      if uncolorized.length > length
+
         if ellipsize
-          text[0, length-3] + '...'
+          goal_length = length-3
         else
-          text[0, length]
+          goal_length = length
         end
+
+        parts = text.scan(/(\e\[\d.*?m)|(.)/) #The idea here is to break the string up into control codes and single characters
+        #We're going to now count up until we hit goal length, but we're not going to ever count control codes against the count
+        #We're also going to keep track of if the last thing was a color code, so we know to reset if a color is "active"
+
+        #I can't think of a better way to do this, it's probably dumb
+        current_length = 0
+        current_index = 0
+        final_string_parts = []
+        color_active = false
+
+        while current_length < goal_length
+          color_code, regular_text = parts[current_index]
+          if not regular_text.nil?
+            current_length = current_length + 1
+            final_string_parts << regular_text
+          elsif not color_code.nil?
+            if color_code == "\e[0m"
+              color_active = false if color_active
+            else
+              color_active = true
+            end
+            final_string_parts << color_code
+          else
+            raise("Something very confusing happened")
+          end
+          current_index = current_index + 1
+        end
+
+        final_string_parts << "..." if ellipsize
+        final_string_parts << "\e[0m" if color_active
+
+        final_string_parts.join("")
       else
         if justify == :right
-          (" "*(length-text.length)) + text
+          (" "*(length-uncolorized.length)) + text
         elsif justify == :center
-          space = length-text.length
+          space = length-uncolorized.length
           left_side = space/2
           right_side = space - left_side
           (" " * left_side) + text + (" "*right_side)
         else #assume left
-          text + (" "*(length-text.length))
+          text + (" "*(length-uncolorized.length))
         end
       end
     end
@@ -317,18 +328,11 @@ module ConsoleTable
       if to_print.is_a? String
         @out.print format(@working_width, normalize(to_print))
       elsif to_print.is_a? Hash
-        color = to_print[:color] || :default
-        background = to_print[:background] || :default
         text = normalize(to_print[:text]) || ""
         ellipsize = to_print[:ellipsize] || false
         justify = to_print[:justify] || :left
-        mode = to_print[:mode] || :default
 
-        formatted=format(@working_width, text, ellipsize, justify)
-        if text != :default or background != :default or mode != :default
-          formatted = formatted.colorize(:color => color, :background => background, :mode => mode)
-        end
-        @out.print formatted
+        @out.print format(@working_width, text, ellipsize, justify)
       end
 
       @out.print "|" if @borders
