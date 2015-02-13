@@ -1,7 +1,7 @@
 require 'terminfo'
 
 module ConsoleTable
-  VERSION = "0.1.4"
+  VERSION = "0.1.5"
 
   def self.define(layout, options={}, &block)
     table = ConsoleTableClass.new(layout, options)
@@ -223,10 +223,10 @@ module ConsoleTable
         require 'pp'
         normalized = string.to_s
 
-        normalized = normalized.sub(/^(\e\[\d.*?m)(\s+)/, '\2\1') #Any leading spaces preceeded by a color code should be swapped with the color code itself, so the spaces themselves aren't colored
-        normalized = normalized.sub(/(\s+)(\e\[\d.*?m)$/, '\2\1')
-
-        normalized.gsub(/\s+/, " ").strip #Primarily to remove any tabs or newlines
+        normalized = normalized.sub(/^(\e\[\d[^m]*?m)(\s+)/, '\2\1') #Any leading spaces preceeded by a color code should be swapped with the color code itself, so the spaces themselves aren't colored
+        normalized = normalized.sub(/(\s+)(\e\[\d[^m]*?m)$/, '\2\1')
+        normalized = normalized.gsub(/\s+/, " ").strip #Primarily to remove any tabs or newlines
+        normalized
       end
     end
 
@@ -284,7 +284,7 @@ module ConsoleTable
 
 
     def uncolorize(string)
-      string.gsub(/\e\[\d.*?m/m, "")
+      string.gsub(/\e\[\d[^m]*?m/m, "")
     end
 
     #TODO: if you're doing center or right-justification, should it trim from the sides or from the left, respectively?

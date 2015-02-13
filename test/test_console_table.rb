@@ -166,6 +166,38 @@ Bl ah                1234
     assert_output_equal expected, @mock_out.string
   end
 
+  def test_spacing_after_colors_is_preserved
+    table_config = [
+        {:key=>:col1, :size=>60, :title=>"Column 1"},
+    ]
+
+    ConsoleTable.define(table_config, :width=> 60, :output=>@mock_out) do |table|
+      table << [
+          "hello - \e[0;34;49mTest\e[0m - this is a test"
+      ]
+
+      table << [
+          "\e[0;34;49mTest\e[0m - this is a test"
+      ]
+
+      table << [
+          "blah and stuff - \e[0;34;49mTest\e[0m"
+      ]
+    end
+
+    expected=<<-END
+============================================================
+Column 1
+------------------------------------------------------------
+hello - Test - this is a test
+Test - this is a test
+blah and stuff - Test
+============================================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
   def test_can_ellipsize_at_column_level
     table_config = [
         {:key=>:col1, :size=>20, :title=>"Column 1", :ellipsize=>true},
@@ -251,13 +283,13 @@ Short
 ==============================================================
       Column 1                   Column 2 Column 3
 --------------------------------------------------------------
-               Right       Center         Left
+               Right        Center        Left
 ==============================================================
     END
 
     assert_includes @mock_out.string, " \e[0;34;49mRight\e[0m"  #space is on outside of coor
     assert_includes @mock_out.string, " \e[0;35;49mLeft\e[0m "  #space is on outside of color
-    #assert_includes @mock_out.string, " \e[0;31;49mCenter\e[0m "  #this assert fails due to what I'm pretty sure is a bug in gsub(), but it's not the end of the world so I'm not doing a workaround
+    assert_includes @mock_out.string, " \e[0;31;49mCenter\e[0m"  #this assert fails due to what I'm pretty sure is a bug in gsub(), but it's not the end of the world so I'm not doing a workaround
 
     assert_output_equal expected, @mock_out.string
   end
