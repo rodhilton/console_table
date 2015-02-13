@@ -138,6 +138,7 @@ will output
 Name            DOB        Nickname(s)                                    Motto
 -------------------------------------------------------------------------------
 Rod             04-14-80 Chainsaw         This is a very long motto, I don't...
+===============================================================================
 ```
 
 Due to limitations of this readme format, you'll have to take my word for it that the capital letters in the Name are highlighted Red, and the DOB is blue.
