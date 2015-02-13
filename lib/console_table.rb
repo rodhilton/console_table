@@ -98,7 +98,7 @@ module ConsoleTable
         @out.print join_char
         @column_widths.each_with_index do |column, i|
           @out.print char*column[:size]
-          if(edge_join_only and i < @column_widths.length - 1)
+          if edge_join_only and i < @column_widths.length - 1
             @out.print char
           else
             @out.print join_char
@@ -152,7 +152,7 @@ module ConsoleTable
 
     def print(options)
 
-      if (options.is_a? String)
+      if options.is_a? String
         print_plain(options)
         return
       end
