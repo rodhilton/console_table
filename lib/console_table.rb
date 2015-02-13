@@ -1,5 +1,3 @@
-require 'terminfo'
-
 module ConsoleTable
   VERSION = "0.1.5"
 
@@ -11,7 +9,6 @@ module ConsoleTable
   end
 
   class ConsoleTableClass
-
     attr_reader :footer
 
     def <<(options)
@@ -241,6 +238,7 @@ module ConsoleTable
 
       total_width = @set_width
       begin
+        require 'terminfo'
         total_width = TermInfo.screen_columns
       rescue => ex
         total_width = ENV["COLUMNS"].to_i || 79
