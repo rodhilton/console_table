@@ -30,6 +30,32 @@ Or install it yourself as:
 
     $ gem install console_table
 
+## Quick Start
+
+Here's a short-and-sweet example of using ConsoleTable
+
+```ruby
+require 'console_table'
+
+ConsoleTable.define(["Name", "DOB", "Title"]) do |table|
+	table << ["Rod", "06-15-80", "Software Engineer"]
+	table << ["Julia", "04-25-81", "Piano Teacher"]
+end
+```
+
+This program will output, on a console 80 characters wide:
+
+```
+================================================================================
+Name                       DOB                        Title
+--------------------------------------------------------------------------------
+Rod                        06-15-80                   Software Engineer
+Julia                      04-25-81                   Piano Teacher
+================================================================================
+```
+
+This usage takes advantage of the fact that ConsoleTable infers a lot of defaults.  For more details about how to exercise the real power of ConsoleTable, refer to the next section.
+
 ## Usage
 
 ConsoleTable needs a lot of information to get going, and it can be somewhat awkward to work with.
@@ -371,6 +397,31 @@ Which will yield this, if you're into that sort of thing:
 *======================================================*
 ```
 
+A lot of times, supplying less information means that ConsoleTable will just guess at various defaults.  For example, if you do not provide a key for the table config, ConsoleTable will simply number your keys with names like 'col1', 'col2', etc.  If you do not provide a title, it will `capitalize` whatever key you are using for the column, or use something like "Column 1" if you do not supply one.  If you do not supply a size, ConsoleTable will just assume you want "*" as the size (remember, you can have many "*"s and the space is divided equally).
+
+Additionally, you can give ONLY the titles for columns by simply suppling an array of strings as the console config.  With this ability, it's possible to define and use ConsoleTable in a remarkably abbreviated manner, where most of the control of the formatting is unexercised.
+
+```ruby
+require 'console_table'
+
+ConsoleTable.define(["Name", "DOB", "Title"]) do |table|
+	table << ["Rod", "06-15-80", "Software Engineer"]
+	table << ["Julia", "04-25-81", "Piano Teacher"]
+end
+
+```
+
+Which yields:
+```
+================================================================================
+Name                       DOB                        Title
+--------------------------------------------------------------------------------
+Rod                        06-15-80                   Software Engineer
+Julia                      04-25-81                   Piano Teacher
+================================================================================
+```
+
+Which is the original Quick Start example up above
 
 ## Contributing
 
