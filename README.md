@@ -143,6 +143,44 @@ Rod             04-14-80 Chainsaw         This is a very long motto, I don't...
 
 Due to limitations of this readme format, you'll have to take my word for it that the colors placed by the 'colorize' gem are preserved, and that the table correctly handles resetting ANSI colors when truncating messages that have formatting.
 
+Another little trick is that you can specify justification options by convention without using hashes for the values, simply by appending or prepending a tab character to the string.  For example:
+
+```ruby
+table_config = [
+   {:key=>:col1, :size=>26, :title=>"Column 1", :justify=>:right},
+   {:key=>:col2, :size=>26, :title=>"Column 2", :justify=>:left},
+   {:key=>:col3, :size=>26, :title=>"Column 3", :justify=>:center}
+]
+
+ConsoleTable.define(table_config) do |table|
+
+	table << {
+		:col1=>"Right",
+		:col2=>"Left",
+		:col3=>"Center"
+	}
+
+	table << {
+		:col1=>"Left\t",
+		:col2=>"\tCenter\t",
+		:col3=>"\tRight"
+	}
+end
+```
+
+This will output:
+
+```
+================================================================================
+                  Column 1 Column 2                            Column 3
+--------------------------------------------------------------------------------
+                     Right Left                                 Center
+Left                                 Center                                Right
+================================================================================
+```
+
+Notice here how the columns all have justifications set, but the values in the second row override all of them, simply by appending a tab character for left justified, prepending a tab character for right justified, and doing both for center.  The tab characters themselves are removed.  Please note this convention is not supported for the column definitions using the "title" attribute, there you must use hash properties to set a column-level justification.
+
 You can also add a title and a footer to the table, or indent the entire table within the window using different options.  Again, here's another example that should more-or-less speak for itself.
 
 
@@ -212,7 +250,3 @@ Note the alternative method of calling `<<` where you can supply an Array instea
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
-
-## Warning
-
-This gem grew out of a skunkworks project and was originally just 300 or so lines as part of a single shell script, which I moved into its own gem simply to reduce the filesize of the script.  It was written and tested simply by making changes and running the script, and only when moving it to a gem did I write any tests for it at all.  It is somewhat undertested and likely buggy in places that my own usage of the gem never uncovered.  Please report any bugs [here](https://github.com/rodhilton/console_table/issues), but also know that I would not recommend usage of this gem for critical-path coding.

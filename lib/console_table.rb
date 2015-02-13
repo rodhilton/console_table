@@ -1,7 +1,7 @@
 require 'terminfo'
 
 module ConsoleTable
-  VERSION = "0.1.2"
+  VERSION = "0.1.4"
 
   def self.define(layout, options={}, &block)
     table = ConsoleTableClass.new(layout, options)
@@ -172,12 +172,19 @@ module ConsoleTable
       @column_widths.each_with_index do |column, i|
         to_print = options[column[:key]] || ""
         justify = column[:justify] || :left
+        ellipsize = column[:ellipsize] || false
+
         if to_print.is_a? String
-          @out.print format(column[:size], normalize(to_print), false, justify)
+          justify = infer_justify_from_string(to_print, justify)
+
+          @out.print format(column[:size], normalize(to_print), ellipsize, justify)
         elsif to_print.is_a? Hash
+          justify = infer_justify_from_string(to_print[:text], justify)
+
           text = normalize(to_print[:text]) || ""
-          ellipsize = to_print[:ellipsize] || false
-          justify = to_print[:justify] || justify #can override
+
+          ellipsize = to_print[:ellipsize] unless to_print[:ellipsize].nil?
+          justify = to_print[:justify] unless to_print[:justify].nil?
 
           formatted=format(column[:size], text, ellipsize, justify)
 
@@ -197,11 +204,29 @@ module ConsoleTable
       @count = @count + 1
     end
 
+    def infer_justify_from_string(to_print, justify)
+      uncolorized = uncolorize(to_print)
+      if uncolorized.start_with?("\t") and uncolorized.end_with?("\t")
+        justify = :center
+      elsif uncolorized.start_with?("\t")
+        justify = :right
+      elsif uncolorized.end_with?("\t")
+        justify = :left
+      end
+      justify
+    end
+
     def normalize(string)
       if string.nil?
         nil
       else
-        string.to_s.gsub(/\s+/, " ").strip #Primarily to remove any tabs or newlines
+        require 'pp'
+        normalized = string.to_s
+
+        normalized = normalized.sub(/^(\e\[\d.*?m)(\s+)/, '\2\1') #Any leading spaces preceeded by a color code should be swapped with the color code itself, so the spaces themselves aren't colored
+        normalized = normalized.sub(/(\s+)(\e\[\d.*?m)$/, '\2\1')
+
+        normalized.gsub(/\s+/, " ").strip #Primarily to remove any tabs or newlines
       end
     end
 
@@ -226,7 +251,7 @@ module ConsoleTable
       used_up = set_sizes.inject(:+) || 0
       available = total_width - used_up - @left_margin - @right_margin - num_spacers
 
-      if available <= 0
+      if available < 0
         raise("ConsoleTable configuration invalid, current window is too small to display required sizes")
       end
 

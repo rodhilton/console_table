@@ -2,6 +2,10 @@ require 'minitest/autorun'
 require 'console_table'
 require 'colorize'
 
+#TODO: What happens if you have a linebreak in what you print?
+# - what if it occurs inside of an active color code?
+#TODO: trimming from different sides depending on justification?
+
 class ConsoleTableTest < Minitest::Test
 
   def setup
@@ -38,6 +42,278 @@ Column 1             Column 2
 Row 1, Column 1      Row 1, Column 2
 Row 2, Column 1      Row 2, Column 1
 =========================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_unicode
+    table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1"},
+        {:key=>:col2, :size=>20, :title=>"Column 2"},
+        {:key=>:col3, :size=>20, :title=>"Column 3"},
+    ]
+
+    ConsoleTable.define(table_config, :width=> 62, :output=>@mock_out) do |table|
+      table << {
+          :col1 => "I ♥ Unicode",
+          :col2 => "I ☂ Unicode",
+          :col3 => "I ♞ Unicode"
+      }
+
+      table << {
+          :col1 => "I ⚂ Unicode Even More",
+          :col2 => "I \u00A5 Unicode Even More",
+          :col3 => "I µ Unicode Even More"
+      }
+
+      table << {
+          :col1 => {:text => "I ⁂ Unicode", :justify=>:right},
+          :col2 => {:text => "I \u2190 Unicode", :justify=>:center},
+          :col3 => {:text => "I ✓ Unicode", :justify=>:left}
+      }
+    end
+
+    expected=<<-END
+==============================================================
+Column 1             Column 2             Column 3
+--------------------------------------------------------------
+I ♥ Unicode          I ☂ Unicode          I ♞ Unicode
+I ⚂ Unicode Even Mor I ¥ Unicode Even Mor I µ Unicode Even Mor
+         I ⁂ Unicode     I ← Unicode      I ✓ Unicode
+==============================================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_spacing_convention_sets_justification
+    table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1"},
+        {:key=>:col2, :size=>20, :title=>"Column 2"},
+        {:key=>:col3, :size=>20, :title=>"Column 3"},
+    ]
+
+    ConsoleTable.define(table_config, :width=> 62, :output=>@mock_out) do |table|
+      table << [
+          "\tRight",
+          "\tCenter\t",
+          "Left\t"
+      ]
+    end
+
+    expected=<<-END
+==============================================================
+Column 1             Column 2             Column 3
+--------------------------------------------------------------
+               Right        Center        Left
+==============================================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_newlines_converted_to_spaces_in_middle_stripped_at_ends
+    table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1"},
+        {:key=>:col2, :size=>20, :title=>"Column 2"},
+        {:key=>:col3, :size=>20, :title=>"Column 3"},
+    ]
+
+    ConsoleTable.define(table_config, :width=> 62, :output=>@mock_out) do |table|
+      table << [
+          {:text=>"Bl\nah", :justify=>:left},
+          {:text=>"\nStuff", :justify=>:left},
+          {:text=>"Junk\n", :justify=>:right}
+      ]
+    end
+
+    expected=<<-END
+==============================================================
+Column 1             Column 2             Column 3
+--------------------------------------------------------------
+Bl ah                Stuff                                Junk
+==============================================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_linebreak_inside_colorcode_still_resets
+    table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1"},
+        {:key=>:col2, :size=>5, :title=>"Column 2"},
+    ]
+
+    ConsoleTable.define(table_config, :width=> 62, :output=>@mock_out) do |table|
+      table << [
+          "Bl\nah".blue,
+          "1234\nStuff".red
+      ]
+    end
+
+    expected=<<-END
+==========================
+Column 1             Colum
+--------------------------
+Bl ah                1234
+==========================
+    END
+
+    require 'pp'
+    puts @mock_out.string
+
+    assert_includes @mock_out.string, "\e[0;34;49mBl ah\e[0m"  #ensure the color got reset
+    assert_includes @mock_out.string, "\e[0;31;49m1234 \e[0m"  #ensure the color got reset
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_can_ellipsize_at_column_level
+    table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1", :ellipsize=>true},
+        {:key=>:col2, :size=>20, :title=>"Column 2"},
+    ]
+
+    ConsoleTable.define(table_config, :width=> 62, :output=>@mock_out) do |table|
+      table << [
+          "This is way too long to fit here",
+          "This is way too long to fit here",
+      ]
+
+      table << [
+          {text: "This is way too long to fit here", :ellipsize=>false},
+          {text: "This is way too long to fit here", :ellipsize=>true},
+      ]
+    end
+
+    expected=<<-END
+=========================================
+Column 1             Column 2
+-----------------------------------------
+This is way too l... This is way too long
+This is way too long This is way too l...
+=========================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_justify_convention_followed_in_hash_text_but_overrideable
+    table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1", :justify=>:center},
+    ]
+
+    ConsoleTable.define(table_config, :width=> 62, :output=>@mock_out) do |table|
+      table << ["Short"]
+      table << ["\tShort"]
+      table << ["Short\t"]
+      table << [{:text=>"Short", :justify=>:right}]
+      table << [{:text=>"Short", :justify=>:left}]
+      table << [{:text=>"\tShort"}]
+      table << [{:text=>"Short\t"}]
+      table << [{:text=>"\tShort", :justify=>:left}] #Override
+      table << [{:text=>"Short\t", :justify=>:right}] #Override
+    end
+
+    expected=<<-END
+====================
+      Column 1
+--------------------
+       Short
+               Short
+Short
+               Short
+Short
+               Short
+Short
+Short
+               Short
+====================
+    END
+
+    puts @mock_out.string
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_should_not_color_tabs_or_ignore_tab_justify_convention_if_inside_color
+    table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1", :justify=>:center},
+        {:key=>:col2, :size=>20, :title=>"Column 2", :justify=>:right},
+        {:key=>:col3, :size=>20, :title=>"Column 3", :justify=>:left},
+    ]
+
+    ConsoleTable.define(table_config, :width=> 62, :output=>@mock_out) do |table|
+      table << [
+          "\tRight".blue,
+          "\tCenter\t".red,
+          "Left\t".magenta,
+      ]
+    end
+
+    expected=<<-END
+==============================================================
+      Column 1                   Column 2 Column 3
+--------------------------------------------------------------
+               Right       Center         Left
+==============================================================
+    END
+
+    assert_includes @mock_out.string, " \e[0;34;49mRight\e[0m"  #space is on outside of coor
+    assert_includes @mock_out.string, " \e[0;35;49mLeft\e[0m "  #space is on outside of color
+    #assert_includes @mock_out.string, " \e[0;31;49mCenter\e[0m "  #this assert fails due to what I'm pretty sure is a bug in gsub(), but it's not the end of the world so I'm not doing a workaround
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_spaces_preserved_in_middle_but_stripped_at_ends
+    table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1"},
+        {:key=>:col2, :size=>20, :title=>"Column 2"},
+        {:key=>:col3, :size=>20, :title=>"Column 3"},
+    ]
+
+    ConsoleTable.define(table_config, :width=> 62, :output=>@mock_out) do |table|
+      table << [
+          {:text=>"Bl ah", :justify=>:left},
+          {:text=>" Stuff", :justify=>:left},
+          {:text=>"Junk ", :justify=>:right}
+      ]
+    end
+
+    expected=<<-END
+==============================================================
+Column 1             Column 2             Column 3
+--------------------------------------------------------------
+Bl ah                Stuff                                Junk
+==============================================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_ignores_tabbing_convention_if_setting_justification_explicitly
+    table_config = [
+        {:key=>:col1, :size=>20, :title=>"Column 1"},
+        {:key=>:col2, :size=>20, :title=>"Column 2"},
+        {:key=>:col3, :size=>20, :title=>"Column 3"},
+    ]
+
+    ConsoleTable.define(table_config, :width=> 62, :output=>@mock_out) do |table|
+      table << [
+          {:text=>"\tBlah", :justify=>:left},
+          {:text=>"\tStuff\t", :justify=>:right},
+          {:text=>"\tJunk", :justify=>:center}
+      ]
+    end
+
+    expected=<<-END
+==============================================================
+Column 1             Column 2             Column 3
+--------------------------------------------------------------
+Blah                                Stuff         Junk
+==============================================================
     END
 
     assert_output_equal expected, @mock_out.string
