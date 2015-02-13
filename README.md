@@ -1,5 +1,7 @@
 # ConsoleTable
 
+[![Build Status](https://travis-ci.org/rodhilton/console_table.svg?branch=master)](https://travis-ci.org/rodhilton/console_table)
+
 ConsoleTable is a helper class that allows you to print data to a console in a clean, table-like fashion.  It's intended for use
 in commandline applications with information-dense output.  It checks your terminal window size (or COLUMNS environment variable) to ensure
 your data will fit, allows you to define table column sizes, and then just supply the ConsoleTable instance with data which will be
