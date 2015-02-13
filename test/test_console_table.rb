@@ -160,9 +160,6 @@ Bl ah                1234
 ==========================
     END
 
-    require 'pp'
-    puts @mock_out.string
-
     assert_includes @mock_out.string, "\e[0;34;49mBl ah\e[0m"  #ensure the color got reset
     assert_includes @mock_out.string, "\e[0;31;49m1234 \e[0m"  #ensure the color got reset
 
@@ -231,8 +228,6 @@ Short
                Short
 ====================
     END
-
-    puts @mock_out.string
 
     assert_output_equal expected, @mock_out.string
   end
