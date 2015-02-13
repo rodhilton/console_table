@@ -1,1 +1,0 @@
-better handling of colors. should you be able to supply colored strings and the spacing is smart enough to ignore control characters?
