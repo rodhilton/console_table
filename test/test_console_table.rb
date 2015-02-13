@@ -1,12 +1,11 @@
+# encoding: utf-8
 require 'minitest/autorun'
-require 'console_table'
-require 'colorize'
-
-#TODO: What happens if you have a linebreak in what you print?
-# - what if it occurs inside of an active color code?
 #TODO: trimming from different sides depending on justification?
 
 class ConsoleTableTest < Minitest::Test
+
+  require 'console_table'
+  require 'colorize'
 
   def setup
     @mock_out = StringIO.new
