@@ -1,5 +1,5 @@
 module ConsoleTable
-  VERSION = "0.1.5"
+  VERSION = "0.1.6"
 
   def self.define(layout, options={}, &block)
     table = ConsoleTableClass.new(layout, options)
@@ -18,7 +18,20 @@ module ConsoleTable
     protected
 
     def initialize(column_layout, options={})
-      @original_column_layout = column_layout
+      @original_column_layout = []
+      column_layout.each_with_index do |layout, i|
+        if layout.is_a? String
+          @original_column_layout << {:key => "col#{i+1}".to_sym, :title=>layout, :size=>"*"}
+        elsif layout[:key].nil? and layout[:title].nil?
+          @original_column_layout << layout.merge({:key => "col#{i+1}".to_sym, :title=>"Column #{i+1}"})
+        elsif layout[:title].nil?
+          @original_column_layout << layout.merge({:title => layout[:key].to_s.capitalize})
+        elsif layout[:key].nil?
+          @original_column_layout << layout.merge({:key => "col#{i+1}".to_sym})
+        else
+          @original_column_layout << layout
+        end
+      end
 
       #Mostly used for mocking/testing
       @out = options[:output] || $stdout
@@ -76,7 +89,7 @@ module ConsoleTable
       @column_widths.each_with_index do |column, i|
         justify = column[:justify] || :left
         ellipsize = column[:ellipsize] || false
-        title = (column[:title] || column[:key].to_s.capitalize).strip
+        title = column[:title].strip
         @out.print format(column[:size], title, ellipsize, justify)
 
         if @borders
@@ -244,7 +257,9 @@ module ConsoleTable
         total_width = ENV["COLUMNS"].to_i || 79
       end if total_width.nil?
 
-      keys = @original_column_layout.reject { |d| d[:key].nil? }.collect { |d| d[:key] }.uniq
+      working_column_layout = []
+
+      keys = @original_column_layout.collect { |d| d[:key] }.uniq
       if keys.length < @original_column_layout.length
         raise("ConsoleTable configuration invalid, same key defined more than once")
       end

@@ -959,6 +959,74 @@ Much mu... Normal,... Much mu...
     assert_output_equal expected, @mock_out.string
   end
 
+  def test_will_generate_default_column_keys_and_titles_and_sizes_if_not_provided
+    table_config = [
+        {:size=>20, :title=>"Column 1"},
+        {:key=>:col2, :size=>20, :title=>"Column 2"},
+        {:size=>20, :title=>"Column 3"},
+        {:key=>:col4, :size=>20},
+        {:size=>20},
+        {}
+    ]
+
+    ConsoleTable.define(table_config, :width=> 125, :output=>@mock_out) do |table|
+      table << ["A", "B", "C", "D", "E", "F"]
+
+    end
+
+    expected=<<-END
+=============================================================================================================================
+Column 1             Column 2             Column 3             Col4                 Column 5             Column 6
+-----------------------------------------------------------------------------------------------------------------------------
+A                    B                    C                    D                    E                    F
+=============================================================================================================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_can_use_a_string_instead_of_hash_to_default_everything
+    table_config = [
+        {:size=>20, :title=>"Column 1"},
+        "Simple Column",
+        {:size=>20, :title=>"Column 3"},
+    ]
+
+    ConsoleTable.define(table_config, :width=> 70, :output=>@mock_out) do |table|
+      table << ["A", "B", "C"]
+    end
+
+    expected=<<-END
+======================================================================
+Column 1             Simple Column                Column 3
+----------------------------------------------------------------------
+A                    B                            C
+======================================================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_can_use_a_config_of_nothing_but_titles_if_you_really_want
+    table_config = [
+        "A Column", "B Column", "C Column"
+    ]
+
+    ConsoleTable.define(table_config, :width=> 30, :output=>@mock_out) do |table|
+      table << ["A", "B", "C"]
+    end
+
+    expected=<<-END
+=============================
+A Column  B Column  C Column
+-----------------------------
+A         B         C
+=============================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
   private
   def assert_output_equal(expected, actual)
     expected_lines = expected.split("\n")

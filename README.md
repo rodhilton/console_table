@@ -243,6 +243,133 @@ end
 
 Note the alternative method of calling `<<` where you can supply an Array instead of a hash, and ConsoleTable will infer from the array order which value goes in what column
 
+Here's a somewhat more practical example:
+
+```ruby
+require 'console_table'
+
+require 'json'
+require 'net/http'
+require 'open-uri'
+require 'colorize'
+
+symbols = ["YHOO", "AAPL", "GOOG", "MSFT", "C", "MMM", "KO", "WMT", "GM", "IBM", "MCD", "VZ", "HD", "DIS", "INTC"]
+
+params = symbols.collect{|s| "\"#{s}\"" }.join(",")
+url = "http://query.yahooapis.com/v1/public/yql?q=select * from yahoo.finance.quotes where symbol in (#{params})&env=http://datatables.org/alltables.env&format=json"
+uri = URI.parse(URI::encode(url))
+response = Net::HTTP.get_response(uri)
+json = JSON.parse(response.body)
+
+table_config = [
+	{:key=>:symbol, :title=>"Symbol", :size=>6},
+	{:key=>:name, :title=>"Name", :size=>17},
+	{:key=>:price, :title=>"Price", :size=>5, :justify=>:right},
+	{:key=>:change, :title=>"Change", :size=>7, :justify=>:right},
+	{:key=>:recommendation, :title=>"Recommendation", :size=>15, :justify=>:right}
+]
+
+ConsoleTable.define(table_config, :title=>"Stock Prices") do |table|
+
+	json["query"]["results"]["quote"].each do |j|
+		change = j["ChangeRealtime"]
+		if change.start_with?("+")
+			change = change.green
+		else
+			change = change.red
+		end
+
+		recommendation = (rand() <= 0.5) ? "BUY!".white.on_green.bold.underline : "Sell".yellow
+
+		table << [
+			j["Symbol"].magenta,
+			j["Name"],
+			j["LastTradePriceOnly"],
+			change,
+			recommendation
+		]
+
+	end
+
+	table.footer << "Recommendations randomly generated"
+
+end
+```
+
+And the output:
+
+```
+======================================================
+                     Stock Prices
+Symbol Name              Price  Change  Recommendation
+------------------------------------------------------
+YHOO   Yahoo! Inc.       44.42  +0.495            Sell
+AAPL   Apple Inc.        127.0   +0.62            BUY!
+GOOG   Google Inc.       549.0   +6.08            BUY!
+MSFT   Microsoft Corpora 43.87   +0.78            Sell
+C      Citigroup, Inc. C 51.20   +0.31            BUY!
+MMM    3M Company Common 165.9   +0.03            Sell
+KO     Coca-Cola Company 41.99   -0.18            BUY!
+WMT    Wal-Mart Stores,  85.81   -0.08            Sell
+GM     General Motors Co 37.62   -0.40            BUY!
+IBM    International Bus 160.4   +1.88            BUY!
+MCD    MCDONALD'S CORPOR 95.65   +0.56            BUY!
+VZ     Verizon Communica 49.31   -0.21            BUY!
+HD     Home Depot, Inc.  111.8   -0.27            BUY!
+DIS    Walt Disney Compa 104.1   +0.59            BUY!
+INTC   Intel Corporation 34.36  +0.235            Sell
+------------------------------------------------------
+                    Recommendations randomly generated
+======================================================
+```
+
+And yes, you can make the table super-ugly and lame if you want by adding `:borders=>true` to the define call, like so:
+
+`ConsoleTable.define(table_config, :title=>"Stock Prices", :borders=>true) do |table|`
+
+Which will yield this, if you're into that sort of thing:
+
+```
+*======================================================*
+|                     Stock Prices                     |
++------+-----------------+-----+-------+---------------+
+|Symbol|Name             |Price| Change| Recommendation|
++------+-----------------+-----+-------+---------------+
+|YHOO  |Yahoo! Inc.      |44.42| +0.495|           BUY!|
++------+-----------------+-----+-------+---------------+
+|AAPL  |Apple Inc.       |127.0|  +0.62|           BUY!|
++------+-----------------+-----+-------+---------------+
+|GOOG  |Google Inc.      |549.0|  +6.08|           Sell|
++------+-----------------+-----+-------+---------------+
+|MSFT  |Microsoft Corpora|43.87|  +0.78|           Sell|
++------+-----------------+-----+-------+---------------+
+|C     |Citigroup, Inc. C|51.20|  +0.31|           Sell|
++------+-----------------+-----+-------+---------------+
+|MMM   |3M Company Common|165.9|  +0.03|           BUY!|
++------+-----------------+-----+-------+---------------+
+|KO    |Coca-Cola Company|41.99|  -0.18|           Sell|
++------+-----------------+-----+-------+---------------+
+|WMT   |Wal-Mart Stores, |85.81|  -0.08|           BUY!|
++------+-----------------+-----+-------+---------------+
+|GM    |General Motors Co|37.62|  -0.40|           BUY!|
++------+-----------------+-----+-------+---------------+
+|IBM   |International Bus|160.4|  +1.88|           BUY!|
++------+-----------------+-----+-------+---------------+
+|MCD   |MCDONALD'S CORPOR|95.65|  +0.56|           Sell|
++------+-----------------+-----+-------+---------------+
+|VZ    |Verizon Communica|49.31|  -0.21|           BUY!|
++------+-----------------+-----+-------+---------------+
+|HD    |Home Depot, Inc. |111.8|  -0.27|           BUY!|
++------+-----------------+-----+-------+---------------+
+|DIS   |Walt Disney Compa|104.1|  +0.59|           BUY!|
++------+-----------------+-----+-------+---------------+
+|INTC  |Intel Corporation|34.36| +0.235|           Sell|
++------+-----------------+-----+-------+---------------+
+|                    Recommendations randomly generated|
+*======================================================*
+```
+
+
 ## Contributing
 
 1. Fork it ( http://github.com/rodhilton/console_table/fork )
