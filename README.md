@@ -421,7 +421,9 @@ Julia                      04-25-81                   Piano Teacher
 ================================================================================
 ```
 
-Which is the original Quick Start example up above
+Which is the original Quick Start example up above.
+
+For more examples of different ways of using ConsoleTable, refer to the test file in this repository, which has many many different examples of usage.
 
 ## Contributing
 

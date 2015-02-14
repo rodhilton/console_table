@@ -1,5 +1,5 @@
 module ConsoleTable
-  VERSION = "0.1.6"
+  VERSION = "0.1.7"
 
   def self.define(layout, options={}, &block)
     table = ConsoleTableClass.new(layout, options)
@@ -19,18 +19,31 @@ module ConsoleTable
 
     def initialize(column_layout, options={})
       @original_column_layout = []
-      column_layout.each_with_index do |layout, i|
-        if layout.is_a? String
-          @original_column_layout << {:key => "col#{i+1}".to_sym, :title=>layout, :size=>"*"}
-        elsif layout[:key].nil? and layout[:title].nil?
-          @original_column_layout << layout.merge({:key => "col#{i+1}".to_sym, :title=>"Column #{i+1}"})
-        elsif layout[:title].nil?
-          @original_column_layout << layout.merge({:title => layout[:key].to_s.capitalize})
-        elsif layout[:key].nil?
-          @original_column_layout << layout.merge({:key => "col#{i+1}".to_sym})
-        else
-          @original_column_layout << layout
+
+      if column_layout.is_a? Fixnum
+        column_layout = (1..column_layout).collect{|i| "Column #{i}"}
+      end
+
+      if column_layout.is_a? Array
+        column_layout.each_with_index do |layout, i|
+          if layout.is_a? String
+            @original_column_layout << {:key => "col#{i+1}".to_sym, :title=>layout, :size=>"*"}
+          elsif layout.is_a? Fixnum
+            @original_column_layout << {:key => "col#{i+1}".to_sym, :title=>"Column #{i+1}", :size=>layout}
+          elsif layout.is_a? Float
+            @original_column_layout << {:key => "col#{i+1}".to_sym, :title=>"Column #{i+1}", :size=>layout}
+          elsif layout[:key].nil? and layout[:title].nil?
+            @original_column_layout << layout.merge({:key => "col#{i+1}".to_sym, :title=>"Column #{i+1}"})
+          elsif layout[:title].nil?
+            @original_column_layout << layout.merge({:title => layout[:key].to_s.capitalize})
+          elsif layout[:key].nil?
+            @original_column_layout << layout.merge({:key => "col#{i+1}".to_sym})
+          else
+            @original_column_layout << layout
+          end
         end
+      else
+        raise("Column layout invalid, must be a num of columns or an array of column definitions")
       end
 
       #Mostly used for mocking/testing
@@ -41,6 +54,7 @@ module ConsoleTable
       @borders = options[:borders] || false #Lines between every cell, implies outline
       @left_margin = options[:left_margin] || 0
       @right_margin = options[:right_margin] || 0
+      @headings = options[:headings].nil? ? true : options[:headings]
 
       #Set outline, just the upper and lower lines
       if @borders
@@ -169,7 +183,7 @@ module ConsoleTable
         return
       end
 
-      print_headings unless @headings_printed
+      print_headings unless @headings_printed or not @headings
 
       if options.is_a? Array #If an array or something is supplied, infer the order from the heading order
         munged_options = {}
@@ -180,7 +194,8 @@ module ConsoleTable
         options = munged_options
       end
 
-      print_line if @borders
+
+      print_line if @borders unless not @headings and @count == 0
 
       @out.print " "*@left_margin
       if @borders
