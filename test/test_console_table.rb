@@ -4,8 +4,6 @@ SimpleCov.start
 
 require 'minitest/autorun'
 
-#TODO: trimming from different sides depending on justification?
-
 class ConsoleTableTest < Minitest::Test
 
 
