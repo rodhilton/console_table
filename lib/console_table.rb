@@ -65,6 +65,7 @@ module ConsoleTable
       @left_margin = options[:left_margin] || 0
       @right_margin = options[:right_margin] || 0
       @headings = options[:headings].nil? ? true : options[:headings]
+      @ellipse = options[:ellipse] || "..."
 
       #Set outline, just the upper and lower lines
       if @borders
@@ -335,8 +336,10 @@ module ConsoleTable
       uncolorized = uncolorize(text)
       if uncolorized.length > length
 
+        ellipsize = false if uncolorize(@ellipse).length >= length
+
         if ellipsize
-          goal_length = length-3
+          goal_length = length-uncolorize(@ellipse).length
         else
           goal_length = length
         end
@@ -367,7 +370,7 @@ module ConsoleTable
           current_index = current_index + 1
         end
 
-        final_string_parts << "..." if ellipsize
+        final_string_parts << @ellipse if ellipsize
         final_string_parts << "\e[0m" if color_active
 
         final_string_parts.join("")

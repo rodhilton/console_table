@@ -7,6 +7,9 @@ require 'minitest/autorun'
 #--
 # TODO: if you're doing center or right-justification, should it trim from the sides or
 #   from the left, respectively?
+# TODO: "compact" option, which when true makes tables output like they do here, but when
+#   compact is FALSE and borders is true, there's an extra space between the | and the text
+#   but only in the middle - on the sides the | goes up against the margin
 #++
 class ConsoleTableTest < Minitest::Test
 
@@ -1468,6 +1471,129 @@ this_...    right
 Fake:...  Fake: 1
 =================
     END
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_can_custom_ellipse
+    table_config = [
+        {:key => :col1, :size => 10, :title => "Column 1", :ellipsize=>true},
+        {:key => :col2, :size => 10, :title => "Column 2",  :ellipsize=>true, :justify=>:right},
+    ]
+
+    ConsoleTable.define(table_config, :width => 100, :ellipse=>"…", :output=>@mock_out) do |table|
+      table << {
+          :col1 => "Row 1, Column 1",
+          :col2 => "Row 1, Column 2"
+      }
+
+      table << {
+          :col1 => {text: "Row 2, Column 1", :ellipsize=>false},
+          :col2 => {text: "Row 2, Column 1", :ellipsize=>false}
+      }
+    end
+
+    expected=<<-END
+=====================
+Column 1     Column 2
+---------------------
+Row 1, Co… Row 1, Co…
+Row 2, Col Row 2, Col
+=====================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_can_use_colorized_custom_ellipse_for_some_reason
+    table_config = [
+        {:key => :col1, :size => 10, :title => "Column 1", :ellipsize=>true},
+        {:key => :col2, :size => 10, :title => "Column 2",  :ellipsize=>true, :justify=>:right},
+    ]
+
+    ConsoleTable.define(table_config, :width => 100, :ellipse=>"…".red, :output=>@mock_out) do |table|
+      table << {
+          :col1 => "Row 1, Column 1",
+          :col2 => "Row 1, Column 2"
+      }
+
+      table << {
+          :col1 => {text: "Row 2, Column 1", :ellipsize=>false},
+          :col2 => {text: "Row 2, Column 1", :ellipsize=>false}
+      }
+    end
+
+    expected=<<-END
+=====================
+Column 1     Column 2
+---------------------
+Row 1, Co… Row 1, Co…
+Row 2, Col Row 2, Col
+=====================
+    END
+
+    assert_includes @mock_out.string, "\e[0;31;49m…\e[0m"
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_can_use_extra_long_ellipse
+    table_config = [
+        {:key => :col1, :size => 10, :title => "Column 1", :ellipsize=>true},
+        {:key => :col2, :size => 10, :title => "Column 2",  :ellipsize=>true, :justify=>:right},
+    ]
+
+    ConsoleTable.define(table_config, :width => 100, :ellipse=>" (cont)", :output=>@mock_out) do |table|
+      table << {
+          :col1 => "Row 1, Column 1",
+          :col2 => "Row 1, Column 2"
+      }
+
+      table << {
+          :col1 => {text: "Row 2, Column 1", :ellipsize=>false},
+          :col2 => {text: "Row 2, Column 1", :ellipsize=>false}
+      }
+    end
+
+    expected=<<-END
+=====================
+Column 1     Column 2
+---------------------
+Row (cont) Row (cont)
+Row 2, Col Row 2, Col
+=====================
+    END
+
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_ellipse_char_too_long_for_area_is_ignored_entirely
+    table_config = [
+        {:key => :col1, :size => 10, :title => "Column 1", :ellipsize=>true},
+        {:key => :col2, :size => 10, :title => "Column 2",  :ellipsize=>true, :justify=>:right},
+    ]
+
+    ConsoleTable.define(table_config, :width => 100, :ellipse=>" (this is a long ellipse)", :output=>@mock_out) do |table|
+      table << {
+          :col1 => "Row 1, Column 1",
+          :col2 => "Row 1, Column 2"
+      }
+
+      table << {
+          :col1 => {text: "Row 2, Column 1", :ellipsize=>false},
+          :col2 => {text: "Row 2, Column 1", :ellipsize=>false}
+      }
+    end
+
+    expected=<<-END
+=====================
+Column 1     Column 2
+---------------------
+Row 1, Col Row 1, Col
+Row 2, Col Row 2, Col
+=====================
+    END
+
     assert_output_equal expected, @mock_out.string
   end
 

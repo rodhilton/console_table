@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = "console_table"
-  spec.version       = "0.2.2"
+  spec.version       = "0.2.3"
   spec.authors       = ["Rod Hilton"]
   spec.email         = ["consoletable@rodhilton.com"]
   spec.summary       = %q{Simplifies printing tables of information to commandline consoles}
