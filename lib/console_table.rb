@@ -15,8 +15,7 @@
 #++
 
 module ConsoleTable
-  VERSION = "0.1.8"
-
+  
   # Define a console table.  Requires a table layout which specifies column information
   # like sizes, titles, and key names.
   def self.define(layout, options={}, &block)
