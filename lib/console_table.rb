@@ -231,7 +231,9 @@ module ConsoleTable
 
           @out.print formatted
         else
-          @out.print format(column[:size], normalize(to_print.to_s))
+          text = to_print.to_s
+          justify = infer_justify_from_string(text, justify)
+          @out.print format(column[:size], normalize(text), ellipsize, justify)
         end
 
         if @borders

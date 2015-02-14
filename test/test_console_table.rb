@@ -1419,6 +1419,58 @@ This is way too long and will
     assert_output_equal expected, @mock_out.string
   end
 
+  class Fake
+    def initialize(id)
+      @fake_id = id
+    end
+
+    def to_s
+      "Fake: #{@fake_id}"
+    end
+  end
+
+  def test_justify_and_ellipsize_non_strings_or_hashes
+
+    layout = [
+        {:size=>8, :title=>"Column 1", :ellipsize=>true},
+        {:size=>8, :title=>"Column 2", :justify=>:right}
+    ]
+
+    ConsoleTable.define(layout, :width => 20, :output => @mock_out) do |table|
+      table << [
+          :this_is_a_super_long_symbol_that_should_get_cut_off,
+          :right
+      ]
+
+      table << [
+          912376409123648791,
+          23423
+      ]
+
+      table << [
+          0.39712390487191234,
+          0.12
+      ]
+
+      table << [
+          Fake.new(341928374134),
+          Fake.new(1)
+      ]
+    end
+
+    expected=<<-END
+==============================
+Column 1
+------------------------------
+This is way too long and will
+==============================
+    END
+
+    puts @mock_out.string
+
+    assert_output_equal expected, @mock_out.string
+  end
+
   private
   def assert_output_equal(expected, actual)
     expected_lines = expected.split("\n")
