@@ -1,13 +1,17 @@
 # encoding: utf-8
+require 'simplecov'
+SimpleCov.start
+
 require 'minitest/autorun'
+
 #TODO: trimming from different sides depending on justification?
 
 class ConsoleTableTest < Minitest::Test
 
-  require 'console_table'
-  require 'colorize'
 
   def setup
+    require 'console_table'
+    require 'colorize'
     @mock_out = StringIO.new
   end
 
@@ -1260,8 +1264,6 @@ Row 2, Column 1                            Row 2, Column 1
 ==========================================================
     END
 
-    puts @mock_out.string
-
     assert_output_equal expected, @mock_out.string
 
   end
@@ -1286,6 +1288,86 @@ Row 2, Column 1         Row 2, Column 2
 
     assert_output_equal expected, @mock_out.string
 
+  end
+
+  def test_can_print_basically_anything
+    table_config = [
+        {:key => :col1, :size => 20, :title => "Column 1"}
+    ]
+
+    ConsoleTable.define(table_config, :width => 100, :output=>@mock_out) do |table|
+      table << ["String"]
+      table << [42]
+      table << [0.3]
+      table << [:why_not]
+      table << [nil]
+
+    end
+
+    expected=<<-END
+====================
+Column 1
+--------------------
+String
+42
+0.3
+why_not
+
+====================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_plain_line_can_be_justified
+    table_config = [
+        {:key => :col1, :size => 20, :title => "Column 1"}
+    ]
+
+    ConsoleTable.define(table_config, :width => 30, :output => @mock_out) do |table|
+      table << ["One"]
+
+      table << "Plain line"
+      table << "Plain line\t"
+      table << "\tPlain line\t"
+      table << "\tPlain line"
+
+      table << ["Two"]
+
+    end
+
+    expected=<<-END
+====================
+Column 1
+--------------------
+One
+Plain line
+Plain line
+     Plain line
+          Plain line
+Two
+====================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_trimming_without_cutting_off_color_doesnt_result_in_extra_color_reset
+    ConsoleTable.define([30], :width => 30, :output => @mock_out) do |table|
+      table << ["This is way too long and #{"will".red} be truncated"]
+    end
+
+    expected=<<-END
+==============================
+Column 1
+------------------------------
+This is way too long and will
+==============================
+    END
+
+    assert_includes @mock_out.string, "and \e[0;31;49mwill\e[0m \n"
+
+    assert_output_equal expected, @mock_out.string
   end
 
   private

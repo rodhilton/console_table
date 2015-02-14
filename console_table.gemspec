@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'console_table'
+# require 'console_table'
 
 Gem::Specification.new do |spec|
   spec.name          = "console_table"
-  spec.version       = ConsoleTable::VERSION
+  spec.version       = "0.2.0"
   spec.authors       = ["Rod Hilton"]
   spec.email         = ["consoletable@rodhilton.com"]
   spec.summary       = %q{Simplifies printing tables of information to commandline consoles}
@@ -17,6 +17,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
+  spec.add_development_dependency 'simplecov', '~> 0.9'
   spec.add_development_dependency "bundler", "~> 1.5"
   spec.add_development_dependency 'rake', '~> 0'
   spec.add_development_dependency 'minitest', '~> 5.5'

@@ -354,8 +354,6 @@ module ConsoleTable
               color_active = true
             end
             final_string_parts << color_code
-          else
-            raise("Something very confusing happened")
           end
           current_index = current_index + 1
         end
@@ -385,13 +383,8 @@ module ConsoleTable
       @out.print "|" if @borders
 
       if to_print.is_a? String
-        @out.print format(@working_width, normalize(to_print))
-      elsif to_print.is_a? Hash
-        text = normalize(to_print[:text]) || ""
-        ellipsize = to_print[:ellipsize] || false
-        justify = to_print[:justify] || :left
-
-        @out.print format(@working_width, text, ellipsize, justify)
+        justify = infer_justify_from_string(to_print, :left)
+        @out.print format(@working_width, normalize(to_print), false, justify)
       end
 
       @out.print "|" if @borders
