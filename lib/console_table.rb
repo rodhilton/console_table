@@ -4,18 +4,8 @@
 #
 # Author::    Rod Hilton
 # License::   MIT
-#
-#--
-# TODO: it's a little weird how, if a footer is too long, it simply doesn't print at all.
-#   This seems like not what someone would want to have happen.
-#   Could we take footer lines and split them every X characters where X is the working
-#   width, then use those?  Long lines effectively wrap, but not on word boundaries
-# TODO: if you're doing center or right-justification, should it trim from the sides or
-#   from the left, respectively?
-#++
-
 module ConsoleTable
-  
+
   # Define a console table.  Requires a table layout which specifies column information
   # like sizes, titles, and key names.
   def self.define(layout, options={}, &block)
@@ -102,7 +92,7 @@ module ConsoleTable
         print_line("=", "*", true)
       end if @outline
 
-      if not @title.nil? and @title.length <= @working_width
+      unless @title.nil?
         @out.print " "*@left_margin
         @out.print "|" if @borders
         @out.print format(@working_width, @title, false, :center)
@@ -118,13 +108,11 @@ module ConsoleTable
       end
 
       footer_lines.each do |line|
-        if uncolorize(line).length <= @working_width
           @out.print " " * @left_margin
           @out.print "|" if @borders
           @out.print format(@working_width, line, false, :right)
           @out.print "|" if @borders
           @out.print "\n"
-        end
       end
 
       if should_print_footer
@@ -182,7 +170,7 @@ module ConsoleTable
     end
 
     def should_print_footer
-      footer_lines.length > 0 && footer_lines.any? { |l| uncolorize(l).length <= @working_width }
+      footer_lines.length > 0
     end
 
     def footer_lines

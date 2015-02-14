@@ -4,8 +4,11 @@ SimpleCov.start
 
 require 'minitest/autorun'
 
+#--
+# TODO: if you're doing center or right-justification, should it trim from the sides or
+#   from the left, respectively?
+#++
 class ConsoleTableTest < Minitest::Test
-
 
   def setup
     require 'console_table'
@@ -658,6 +661,28 @@ This is way too l...
     assert_output_equal expected, @mock_out.string
   end
 
+  def test_can_truncate_titles
+    table_config = [
+        {:key => :col1, :size => 20, :title => "This column title is too long"}
+    ]
+
+    ConsoleTable.define(table_config, :width => 100, :title=>"Hello world this is too long", :output => @mock_out) do |table|
+      table << ["This is short"]
+
+    end
+
+    expected=<<-END
+====================
+Hello world this is
+This column title is
+--------------------
+This is short
+====================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
   def test_can_justify_columns_and_override_in_rows
     table_config = [
         {:key => :col1, :size => 20, :title => "Column 1"},
@@ -769,6 +794,32 @@ Short1                      Short2                      Short3
 =========================================
 This is just a string, it should ignore c
 =========================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  #TODO: Really don't love how this works.. truncate from right?  Auto word-wrap? something..
+  def test_printing_a_single_string_truncates_footer
+    table_config = [
+        {:key => :col1, :size => 20, :title => "Column 1"},
+    ]
+
+    ConsoleTable.define(table_config, :width => 100, :output => @mock_out) do |table|
+      table << "Blah"
+
+      table.footer << "This is a really long footer that should automatically be truncated"
+      table.footer << "This is a really long footer \n that should automatically be truncated"
+    end
+
+    expected=<<-END
+====================
+Blah
+--------------------
+This is a really lon
+This is a really lon
+that should automati
+====================
     END
 
     assert_output_equal expected, @mock_out.string
