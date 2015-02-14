@@ -1459,15 +1459,15 @@ This is way too long and will
     end
 
     expected=<<-END
-==============================
-Column 1
-------------------------------
-This is way too long and will
-==============================
+=================
+Column 1 Column 2
+-----------------
+this_...    right
+91237...    23423
+0.397...     0.12
+Fake:...  Fake: 1
+=================
     END
-
-    puts @mock_out.string
-
     assert_output_equal expected, @mock_out.string
   end
 
