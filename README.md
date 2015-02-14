@@ -213,6 +213,7 @@ You can also add a title and a footer to the table, or indent the entire table w
 
 ```ruby
 require 'console_table'
+require 'colorize'
 
 table_config = [
    {:key=>:title, :size=>15, :title=>"Movie Title"},
@@ -223,23 +224,23 @@ table_config = [
 
 ConsoleTable.define(table_config, :left_margin=>5, :right_margin=>10, :title=>"Movie Killers") do |table|
 	table << {
-		:title=>"Friday the 13th"
+		:title=>"Friday the 13th",
 		:name=>{:text=>"Jason's Mom", :justify=>:left},
-		:release_date=>"05-09-80".blue
+		:release_date=>"05-09-80".blue,
 		:tagline=>{:text=>"They were warned...They are doomed...And on Friday the 13th, nothing will save them.", :ellipsize=>true}
 	}
 
 	table << {
 		:title=>"Halloween".white.on_red,
 		:name=>{:text=>"Michael Meyers", :justify=>:left},
-		:release_date=>"10-25-80".blue
+		:release_date=>"10-25-80".blue,
 		:tagline=>{:text=>"Everyone is entitled to one good scare", :ellipsize=>true}
 	}
 
 	table << {
-		:title=>{:text=>"Nightmare on Elm St."}
+		:title=>{:text=>"Nightmare on Elm St."},
 		:name=>{:text=>"Freddy Krueger", :justify=>:left},
-		:release_date=>{text: "11-16-84".blue}
+		:release_date=>{text: "11-16-84".blue},
 		:tagline=>{:text=>"A scream that wakes you up, might be your own", :ellipsize=>true}
 	}
 
@@ -250,6 +251,7 @@ ConsoleTable.define(table_config, :left_margin=>5, :right_margin=>10, :title=>"M
 end
 ```
 
+which yields:
 
 ```
      =================================================================
@@ -411,6 +413,7 @@ end
 ```
 
 Which yields:
+
 ```
 ================================================================================
 Name                       DOB                        Title
