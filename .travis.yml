@@ -1,11 +1,3 @@
 language: ruby
 rvm:
 - 1.9.3
-deploy:
-  provider: rubygems
-  api_key:
-    secure: M1I+7IFuje77sZjtQbmvamzihT+NEJpCzb6Eco8AKbJu/swim+2DvojdJHJw3qpjBt+S2u6zPWWc8KqP6ME7YZzydhJKN/rftUow4lyPbJ6ut9wNg4J9EaZgawG/BOm7LESqtj6J5KWrEd2qRn86mLMHO6ZgLsvsKBWR+oMnb+U=
-  gem: console_table
-  on:
-    tags: true
-    repo: rodhilton/console_table
