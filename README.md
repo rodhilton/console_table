@@ -398,7 +398,7 @@ Which will yield this, if you're into that sort of thing:
 *======================================================*
 ```
 
-A lot of times, supplying less information means that ConsoleTable will just guess at various defaults.  For example, if you do not provide a key for the table config, ConsoleTable will simply number your keys with names like 'col1', 'col2', etc.  If you do not provide a title, it will `capitalize` whatever key you are using for the column, or use something like "Column 1" if you do not supply one.  If you do not supply a size, ConsoleTable will just assume you want "*" as the size (remember, you can have many "*"s and the space is divided equally).
+A lot of times, supplying less information means that ConsoleTable will just guess at various defaults.  For example, if you do not provide a key for the table config, ConsoleTable will simply number your keys with names like 'col1', 'col2', etc.  If you do not provide a title, it will `capitalize` whatever key you are using for the column, or use something like "Column 1" if you do not supply one.  If you do not supply a size, ConsoleTable will just assume you want "***" as the size (remember, you can have many "*"s and the space is divided equally).
 
 Additionally, you can give ONLY the titles for columns by simply suppling an array of strings as the console config.  With this ability, it's possible to define and use ConsoleTable in a remarkably abbreviated manner, where most of the control of the formatting is unexercised.
 
