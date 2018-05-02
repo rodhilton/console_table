@@ -31,7 +31,7 @@ module ConsoleTable
     def initialize(column_layout, options={})
       @original_column_layout = []
 
-      if column_layout.is_a? Fixnum
+      if column_layout.is_a? Integer
         column_layout = (1..column_layout).collect{|i| "Column #{i}"}
       end
 
@@ -39,7 +39,7 @@ module ConsoleTable
         column_layout.each_with_index do |layout, i|
           if layout.is_a? String
             @original_column_layout << {:key => "col#{i+1}".to_sym, :title=>layout, :size=>"*"}
-          elsif layout.is_a? Fixnum
+          elsif layout.is_a? Integer
             @original_column_layout << {:key => "col#{i+1}".to_sym, :title=>"Column #{i+1}", :size=>layout}
           elsif layout.is_a? Float
             @original_column_layout << {:key => "col#{i+1}".to_sym, :title=>"Column #{i+1}", :size=>layout}
