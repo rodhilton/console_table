@@ -16,7 +16,7 @@ module ConsoleTable
   end
 
   class ConsoleTableClass
-    require 'terminfo'
+    require 'io/console'
 
     # Add strings to the footer array to have them formatted when the table closes
     attr_reader :footer
@@ -278,7 +278,7 @@ module ConsoleTable
 
       total_width = @set_width
       begin
-        total_width = TermInfo.screen_columns
+        total_width = IO.console.winsize[1]
       rescue => ex
         total_width = ENV["COLUMNS"].to_i unless ENV["COLUMNS"].nil?
         total_width = 79 if total_width.nil?

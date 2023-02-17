@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = "console_table"
-  spec.version       = "0.3.0"
+  spec.version       = "0.3.1"
   spec.authors       = ["Rod Hilton"]
   spec.email         = ["consoletable@rodhilton.com"]
   spec.summary       = %q{Simplifies printing tables of information to commandline consoles}
@@ -17,10 +17,10 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_development_dependency 'simplecov', '~> 0.9'
-  spec.add_development_dependency "bundler", "~> 1.5"
+  spec.add_development_dependency "bundler", "~> 2.3.7"
   spec.add_development_dependency 'rake', '~> 0'
   spec.add_development_dependency 'minitest', '~> 5.5'
   spec.add_development_dependency 'colorize', '~> 0.7'
+  spec.add_development_dependency 'pry'
 
-  spec.add_runtime_dependency 'ruby-terminfo', '~> 0.1'
 end
