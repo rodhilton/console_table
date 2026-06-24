@@ -67,6 +67,7 @@ module ConsoleTable
       @right_margin = options[:right_margin] || 0
       @headings = options[:headings].nil? ? true : options[:headings]
       @ellipse = options[:ellipse] || "..."
+      @multiline = options[:multiline] || false
 
       #Set outline, just the upper and lower lines
       if @borders
@@ -207,6 +208,18 @@ module ConsoleTable
 
       print_line if @borders unless not @headings and @count == 0
 
+      if @multiline
+        multiline_rows(options).each do |row|
+          print_cells(row)
+        end
+      else
+        print_cells(options)
+      end
+
+      @count = @count + 1
+    end
+
+    def print_cells(options)
       @out.print " "*@left_margin
       if @borders
         @out.print "|"
@@ -245,8 +258,42 @@ module ConsoleTable
         end
       end
       @out.print "\n"
+    end
 
-      @count = @count + 1
+    def multiline_rows(options)
+      lines_by_key = {}
+      @column_widths.each do |column|
+        lines_by_key[column[:key]] = cell_lines(options[column[:key]] || "")
+      end
+
+      row_height = lines_by_key.values.collect { |lines| lines.length }.max || 1
+
+      (0...row_height).collect do |line_index|
+        row = {}
+        @column_widths.each do |column|
+          row[column[:key]] = lines_by_key[column[:key]][line_index] || ""
+        end
+        row
+      end
+    end
+
+    def cell_lines(to_print)
+      if to_print.is_a? Hash
+        split_lines(to_print[:text]).collect do |line|
+          to_print.merge({:text => line})
+        end
+      else
+        split_lines(to_print)
+      end
+    end
+
+    def split_lines(string)
+      return [""] if string.nil?
+
+      string = string.to_s
+      return [""] if string == ""
+
+      string.split("\n", -1)
     end
 
     def infer_justify_from_string(to_print, justify)

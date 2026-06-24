@@ -116,7 +116,7 @@ Column 1             Column 2             Column 3
     assert_output_equal expected, @mock_out.string
   end
 
-  def test_newlines_converted_to_spaces_in_middle_stripped_at_ends
+  def test_newlines_converted_to_spaces_in_middle_stripped_at_ends_by_default
     table_config = [
         {:key => :col1, :size => 20, :title => "Column 1"},
         {:key => :col2, :size => 20, :title => "Column 2"},
@@ -137,6 +137,118 @@ Column 1             Column 2             Column 3
 --------------------------------------------------------------
 Bl ah                Stuff                                Junk
 ==============================================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_newlines_render_as_multiple_cell_lines_when_multiline_is_enabled
+    table_config = [
+        {:key => :col1, :size => 20, :title => "Column 1"},
+        {:key => :col2, :size => 20, :title => "Column 2"},
+        {:key => :col3, :size => 20, :title => "Column 3"},
+    ]
+
+    ConsoleTable.define(table_config, :width => 62, :multiline => true, :output => @mock_out) do |table|
+      table << [
+          {:text => "Bl\nah", :justify => :left},
+          {:text => "\nStuff", :justify => :left},
+          {:text => "Junk\n", :justify => :right}
+      ]
+    end
+
+    expected=<<-END
+==============================================================
+Column 1             Column 2             Column 3
+--------------------------------------------------------------
+Bl                                                        Junk
+ah                   Stuff
+==============================================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_multiline_cells_in_multiple_columns_share_continuation_lines
+    table_config = [
+        {:key => :first, :size => 10, :title => "First"},
+        {:key => :second, :size => 10, :title => "Second"},
+        {:key => :third, :size => 10, :title => "Third"},
+    ]
+
+    ConsoleTable.define(table_config, :width => 40, :multiline => true, :output => @mock_out) do |table|
+      table << {
+          :first => "A1\nA2",
+          :second => "B1\nB2",
+          :third => "C1"
+      }
+    end
+
+    expected=<<-END
+================================
+First      Second     Third
+--------------------------------
+A1         B1         C1
+A2         B2
+================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_explicit_newlines_render_as_continuation_lines
+    table_config = [
+        {:title => "Test", :size => 6},
+        {:title => "This", :size => 8},
+        {:title => "Thing", :size => "*"},
+    ]
+
+    ConsoleTable.define(table_config, :title => "Test Table", :width => 60, :multiline => true, :output => @mock_out) do |table|
+      table << ["short", "longer", "longer text\nwith line wraps"]
+      table << ["short", "longer", "longer text without line wraps but with enough text to kinda need them"]
+    end
+
+    expected=<<-END
+============================================================
+                         Test Table
+Test   This     Thing
+------------------------------------------------------------
+short  longer   longer text
+                with line wraps
+short  longer   longer text without line wraps but with enou
+============================================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_multiline_cells_ellipsize_each_line_independently
+    table_config = [
+        {:key => :first, :size => 10, :title => "First", :ellipsize => true},
+        {:key => :second, :size => 10, :title => "Second", :ellipsize => true},
+    ]
+
+    ConsoleTable.define(table_config, :width => 40, :multiline => true, :output => @mock_out) do |table|
+      table << {
+          :first => "short\nthis line is very long",
+          :second => "this line is very long\nshort"
+      }
+
+      table << {
+          :first => {:text => "tiny\nanother line is too long", :ellipsize => true},
+          :second => {:text => "another line is too long\ntiny", :ellipsize => true}
+      }
+    end
+
+    expected=<<-END
+=====================
+First      Second
+---------------------
+short      this li...
+this li... short
+tiny       another...
+another... tiny
+=====================
     END
 
     assert_output_equal expected, @mock_out.string
@@ -1155,6 +1267,66 @@ Row 2, Column 1      Row 2, Column 1
 +--------------------+--------------------+
 |Row 2, Column 1     |Row 2, Column 1     |
 *====================*====================*
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_newlines_render_inside_bordered_table_cells
+    table_config = [
+        {:key => :col1, :size => 6, :title => "Column 1"},
+        {:key => :col2, :size => 8, :title => "Column 2"},
+    ]
+
+    ConsoleTable.define(table_config, :width => 100, :headings => false, :borders => true, :multiline => true, :output => @mock_out) do |table|
+      table << ["A\nB", "C"]
+      table << ["D", "E\nF"]
+    end
+
+    expected=<<-END
+*======*========*
+|A     |C       |
+|B     |        |
++------+--------+
+|D     |E       |
+|      |F       |
+*======*========*
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_multiline_bordered_cells_mix_padding_justification_and_ellipses
+    table_config = [
+        {:key => :left, :size => 10, :title => "Left", :ellipsize => true},
+        {:key => :center, :size => 12, :title => "Center", :justify => :center, :ellipsize => true},
+        {:key => :right, :size => 10, :title => "Right", :justify => :right, :ellipsize => true},
+    ]
+
+    ConsoleTable.define(table_config, :width => 80, :borders => true, :multiline => true, :output => @mock_out) do |table|
+      table << {
+          :left => "Short\nThis line is too long",
+          :center => "This center line is too long\nMid",
+          :right => "Tiny"
+      }
+
+      table << {
+          :left => "This starts too long\nOK",
+          :center => {:text => "Small\nThis override line is too long", :justify => :left, :ellipsize => true},
+          :right => "This right line is too long\nEnd"
+      }
+    end
+
+    expected=<<-END
+*==========*============*==========*
+|Left      |   Center   |     Right|
++----------+------------+----------+
+|Short     |This cent...|      Tiny|
+|This li...|    Mid     |          |
++----------+------------+----------+
+|This st...|Small       |This ri...|
+|OK        |This over...|       End|
+*==========*============*==========*
     END
 
     assert_output_equal expected, @mock_out.string

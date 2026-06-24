@@ -106,6 +106,34 @@ Rod             04-14-80 Chainsaw         It works on my machine
 ===============================================================================
 ```
 
+By default, line breaks in cell values are treated as whitespace to preserve the historical behavior.  If you pass `:multiline=>true` when defining the table, values can contain line breaks, and ConsoleTable will keep the following lines in the correct columns.  Each line is still padded, justified, truncated, or ellipsized according to the column settings.
+
+```ruby
+table_config = [
+   {:title=>"Test", :size=>6},
+   {:title=>"This", :size=>8},
+   {:title=>"Thing", :size=>"*", :ellipsize=>true},
+]
+
+ConsoleTable.define(table_config, :title=>"Test Table", :width=>60, :multiline=>true) do |table|
+	table << ["short", "longer", "longer text\nwith line wraps"]
+	table << ["short", "longer", "longer text without line wraps but with enough text to kinda need them"]
+end
+```
+
+which yields:
+
+```
+============================================================
+                         Test Table
+Test   This     Thing
+------------------------------------------------------------
+short  longer   longer text
+                with line wraps
+short  longer   longer text without line wraps but with e...
+============================================================
+```
+
 We can specify justification options for columns as well, and even overwrite them when we supply row data, simply by using `Hash`es instead of `String`s for the values.  For example:
 
 ```ruby
