@@ -196,6 +196,68 @@ A2         B2
     assert_output_equal expected, @mock_out.string
   end
 
+  def test_multiline_cells_preserve_column_and_hash_justification
+    table_config = [
+        {:key => :right, :size => 10, :title => "Right", :justify => :right},
+        {:key => :center, :size => 10, :title => "Center", :justify => :center},
+        {:key => :left, :size => 10, :title => "Left"},
+    ]
+
+    ConsoleTable.define(table_config, :width => 40, :multiline => true, :output => @mock_out) do |table|
+      table << {
+          :right => "One\nTwo",
+          :center => "One\nTwo",
+          :left => "One\nTwo"
+      }
+
+      table << {
+          :right => {:text => "One\nTwo", :justify => :right},
+          :center => {:text => "One\nTwo", :justify => :center},
+          :left => {:text => "One\nTwo", :justify => :left}
+      }
+    end
+
+    expected=<<-END
+================================
+     Right   Center   Left
+--------------------------------
+       One    One     One
+       Two    Two     Two
+       One    One     One
+       Two    Two     Two
+================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
+  def test_multiline_cells_preserve_tab_justification_convention
+    table_config = [
+        {:key => :right, :size => 10, :title => "Right"},
+        {:key => :center, :size => 10, :title => "Center"},
+        {:key => :left, :size => 10, :title => "Left"},
+    ]
+
+    ConsoleTable.define(table_config, :width => 40, :multiline => true, :output => @mock_out) do |table|
+      table << {
+          :right => "\tOne\n\tTwo",
+          :center => "\tOne\t\n\tTwo\t",
+          :left => "One\t\nTwo\t"
+      }
+    end
+
+    expected=<<-END
+================================
+Right      Center     Left
+--------------------------------
+       One    One     One
+       Two    Two     Two
+================================
+    END
+
+    assert_output_equal expected, @mock_out.string
+  end
+
   def test_explicit_newlines_render_as_continuation_lines
     table_config = [
         {:title => "Test", :size => 6},
