@@ -1,4 +1,4 @@
-ConsoleTable [![Gem Version](https://badge.fury.io/rb/console_table.svg)](https://rubygems.org/gems/console_table) [![Build Status](https://travis-ci.org/rodhilton/console_table.svg?branch=master)](https://travis-ci.org/rodhilton/console_table)
+ConsoleTable [![Gem Version](https://img.shields.io/gem/v/console_table.svg)](https://rubygems.org/gems/console_table)
 =========
 
 ConsoleTable is a helper class that allows you to print data to a console in a clean, table-like fashion.  It's intended for use
